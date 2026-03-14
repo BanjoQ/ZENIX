@@ -707,9 +707,59 @@
   .s-row { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; color: var(--text-dim); }
   .s-val { font-family: 'DM Mono', monospace; font-weight: 600; color: var(--purple); }
 
-  input[type="date"]::-webkit-calendar-picker-indicator {
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
     filter: invert(0.5);
     cursor: pointer;
+  }
+
+
+  /* ---- IOB BANNER ---- */
+  .iob-card {
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+  }
+  .iob-active {
+    background: rgba(255,183,77,0.08);
+    border: 1px solid rgba(255,183,77,0.25);
+  }
+  .iob-clear {
+    background: rgba(105,240,174,0.06);
+    border: 1px solid rgba(105,240,174,0.2);
+  }
+  .iob-icon { font-size: 18px; flex-shrink: 0; }
+  .iob-body { flex: 1; min-width: 0; }
+  .iob-title { font-weight: 700; margin-bottom: 2px; }
+  .iob-detail { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); }
+  .iob-pct {
+    font-family: 'DM Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    flex-shrink: 0;
+    text-align: right;
+  }
+  .iob-bar-wrap {
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+  .iob-bar {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  input[type="date"], input[type="time"] {
+    min-width: 0;
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
   }
 </style>
 </head>
@@ -798,7 +848,11 @@
           <div class="form-grid">
             <div class="form-group">
               <label>Date</label>
-              <input type="date" id="f-date">
+              <input type="date" id="f-date" style="min-width:0;width:100%">
+            </div>
+            <div class="form-group">
+              <label>Heure</label>
+              <input type="time" id="f-time" style="min-width:0;width:100%">
             </div>
             <div class="form-group">
               <label>Repas</label>
@@ -815,7 +869,11 @@
             </div>
             <div class="form-group">
               <label>Glucides consommés (g)</label>
-              <input type="text" id="f-carbs" placeholder="ex: 60" inputmode="decimal">
+              <div style="position:relative">
+                <input type="text" id="f-carbs" placeholder="60  ou  =30+45+20" inputmode="decimal" autocomplete="off" autocorrect="off" spellcheck="false">
+                <span id="f-carbs-result" style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);font-family:'DM Mono',monospace;font-size:12px;color:var(--green);pointer-events:none;background:var(--bg);padding:0 4px"></span>
+              </div>
+              <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);margin-top:2px">Formule : =30+45 → calcul auto</span>
             </div>
             <div class="form-group full">
               <label>Insuline injectée (U)</label>
@@ -831,6 +889,9 @@
           <div class="badge-row" style="margin-top:16px">
             <span id="glyc-badge" class="glyc-badge" style="display:none"></span>
           </div>
+
+          <!-- IOB Banner -->
+          <div id="iob-banner" style="margin-bottom:10px;display:none"></div>
 
           <div class="calc-preview" id="calc-preview">
             <div class="calc-row">
@@ -1118,8 +1179,9 @@ function init() {
   profile = JSON.parse(localStorage.getItem(KEY_PROFILE) || JSON.stringify(DEFAULT_PROFILE));
   modifs  = JSON.parse(localStorage.getItem(KEY_MODIFS)  || '[]');
 
-  // Set today's date
+  // Set today's date & time
   document.getElementById('f-date').value = today();
+  document.getElementById('f-time').value = nowTime();
 
   // Event listeners
   ['f-glyc','f-carbs','f-meal'].forEach(id => {
@@ -1129,6 +1191,7 @@ function init() {
   document.getElementById('btn-reuse').addEventListener('click', reuseLastMeal);
 
   updateCalc();
+  updateIOB();
   renderAll();
 }
 
@@ -1138,6 +1201,24 @@ function today() {
 
 function parseNum(v) {
   return parseFloat(String(v).replace(',', '.')) || 0;
+}
+
+// Parse glucides : valeur directe OU formule =30+20+15
+function parseCarbs(raw) {
+  const v = String(raw).trim();
+  if (v.startsWith('=')) {
+    const expr = v.slice(1).replace(/,/g, '.').replace(/[^0-9+\-*/.() ]/g, '');
+    try {
+      const result = Function('"use strict"; return (' + expr + ')')();
+      return isFinite(result) && result >= 0 ? Math.round(result * 100) / 100 : 0;
+    } catch { return 0; }
+  }
+  return parseFloat(v.replace(',', '.')) || 0;
+}
+
+function nowTime() {
+  const d = new Date();
+  return d.toTimeString().slice(0,5);
 }
 
 // ========== CALC ==========
@@ -1151,9 +1232,111 @@ function calcRecommended(glyc, carbs, meal) {
   return { insCarbs, correction, total, manque };
 }
 
+
+// ========== IOB — INSULINE ACTIVE ==========
+// Courbe d'action insuline rapide sur 5h (300 min)
+// Modèle bilinéaire : monte jusqu'à 30min, descend jusqu'à 300min
+function insulinActivityFraction(minutesAgo) {
+  const DIA = 300; // durée d'action 5h
+  if (minutesAgo <= 0 || minutesAgo >= DIA) return 0;
+  // % insuline encore active : courbe simple trapézoïdale
+  // Peak à 60 min, fin à 300 min
+  const peak = 60;
+  if (minutesAgo <= peak) {
+    return 1 - (minutesAgo / peak) * 0.1; // très peu absorbé au début
+  }
+  // Décroissance linéaire de peak à DIA
+  return 1 - ((minutesAgo - peak) / (DIA - peak));
+}
+
+function calcIOB() {
+  const now = new Date();
+  let totalIOB = 0;
+  let lastEntry = null;
+  let lastMinutesAgo = null;
+
+  entries.forEach(e => {
+    if (!e.insulin || e.insulin <= 0) return;
+    // Reconstituer datetime de l'entrée
+    const timeStr = e.time || '00:00';
+    const dt = new Date(e.date + 'T' + timeStr + ':00');
+    const minutesAgo = (now - dt) / 60000;
+    if (minutesAgo < 0 || minutesAgo >= 300) return;
+
+    const frac = insulinActivityFraction(minutesAgo);
+    const iob = e.insulin * frac;
+    totalIOB += iob;
+
+    if (lastMinutesAgo === null || minutesAgo < lastMinutesAgo) {
+      lastMinutesAgo = minutesAgo;
+      lastEntry = e;
+    }
+  });
+
+  return { totalIOB: Math.max(0, totalIOB), lastEntry, lastMinutesAgo };
+}
+
+function updateIOB() {
+  const banner = document.getElementById('iob-banner');
+  if (!banner) return;
+
+  const { totalIOB, lastEntry, lastMinutesAgo } = calcIOB();
+
+  if (!lastEntry) {
+    // Aucune injection active
+    banner.style.display = 'block';
+    banner.innerHTML = `<div class="iob-card iob-clear">
+      <span class="iob-icon">✅</span>
+      <div class="iob-body">
+        <div class="iob-title" style="color:var(--green)">Pas d'insuline active</div>
+        <div class="iob-detail">Aucune injection dans les 5 dernières heures</div>
+      </div>
+      <div class="iob-pct" style="color:var(--green)">0%</div>
+    </div>`;
+    return;
+  }
+
+  // Calcul % restant de la dernière injection
+  const lastFrac = insulinActivityFraction(lastMinutesAgo);
+  const lastPct = Math.round(lastFrac * 100);
+  const hoursAgo = lastMinutesAgo / 60;
+  const h = Math.floor(hoursAgo);
+  const m = Math.round((hoursAgo - h) * 60);
+  const timeLabel = h > 0 ? `${h}h${m > 0 ? m + 'min' : ''}` : `${Math.round(lastMinutesAgo)} min`;
+  const timeOfInj = lastEntry.time || '?';
+  const dateOfInj = lastEntry.date || '';
+
+  const iobRounded = Math.round(totalIOB * 100) / 100;
+  const barColor = lastPct > 50 ? 'var(--orange)' : lastPct > 20 ? '#ffcc80' : 'var(--green)';
+  const titleColor = lastPct > 50 ? 'var(--orange)' : lastPct > 20 ? '#ffcc80' : 'var(--green)';
+
+  banner.style.display = 'block';
+  banner.innerHTML = `<div class="iob-card iob-active">
+    <span class="iob-icon">⚡</span>
+    <div class="iob-body">
+      <div class="iob-title" style="color:${titleColor}">Insuline active : ${iobRounded} U</div>
+      <div class="iob-detail">Dernière injection : ${timeOfInj} (il y a ${timeLabel})<br>
+        ${lastEntry.insulin} U injectée · ${lastPct}% encore actifs</div>
+      <div class="iob-bar-wrap">
+        <div class="iob-bar" style="width:${lastPct}%;background:${barColor}"></div>
+      </div>
+    </div>
+    <div class="iob-pct" style="color:${titleColor}">${lastPct}%</div>
+  </div>`;
+}
+
 function updateCalc() {
   const glyc  = parseNum(document.getElementById('f-glyc').value);
-  const carbs = parseNum(document.getElementById('f-carbs').value);
+  const carbsRaw = document.getElementById('f-carbs').value;
+  const carbs = parseCarbs(carbsRaw);
+  // Show formula result badge
+  const resEl = document.getElementById('f-carbs-result');
+  if (resEl) {
+    if (carbsRaw.trim().startsWith('=') && carbs > 0) {
+      resEl.textContent = '= ' + carbs + ' g';
+      resEl.style.display = 'block';
+    } else { resEl.style.display = 'none'; }
+  }
   const meal  = document.getElementById('f-meal').value;
 
   // Badge
@@ -1181,15 +1364,17 @@ function updateCalc() {
   document.getElementById('c-manque').textContent     = (r.manque >= 0 ? '+' : '') + r.manque.toFixed(2) + ' U';
 
   document.getElementById('c-correction').style.color = r.correction > 0 ? 'var(--orange)' : 'var(--green)';
+  updateIOB();
 }
 
 // ========== SAVE ENTRY ==========
 function saveEntry() {
   const glyc   = parseNum(document.getElementById('f-glyc').value);
-  const carbs  = parseNum(document.getElementById('f-carbs').value);
+  const carbs  = parseCarbs(document.getElementById('f-carbs').value);
   const insulin= parseNum(document.getElementById('f-insulin').value);
   const meal   = document.getElementById('f-meal').value;
   const date   = document.getElementById('f-date').value || today();
+  const time   = document.getElementById('f-time').value || nowTime();
   const comment= document.getElementById('f-comment').value.trim();
 
   if (!glyc && !carbs && !insulin) { showToast('⚠️ Remplissez au moins un champ.'); return; }
@@ -1198,7 +1383,7 @@ function saveEntry() {
 
   const entry = {
     id: Date.now(),
-    date, meal, glyc, carbs, insulin,
+    date, time, meal, glyc, carbs, insulin,
     comment,
     recommended: calc.total,
     manque: calc.manque,
@@ -1218,6 +1403,9 @@ function clearForm() {
   document.getElementById('f-insulin').value = '';
   document.getElementById('f-comment').value = '';
   document.getElementById('f-date').value = today();
+  document.getElementById('f-time').value = nowTime();
+  const resEl2 = document.getElementById('f-carbs-result');
+  if (resEl2) resEl2.style.display = 'none';
   updateCalc();
 }
 
@@ -1281,7 +1469,7 @@ function renderHistory() {
     const mealEmoji = {matin:'🌅',midi:'☀️',soir:'🌆',nuit:'🌙'}[e.meal] || '';
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td class="td-mono">${e.date}</td>
+      <td class="td-mono" style="white-space:nowrap">${e.date}<br><span style="font-size:10px;color:var(--text-muted)">${e.time || '—'}</span></td>
       <td>${mealEmoji} ${e.meal}</td>
       <td class="td-mono">${e.glyc ? e.glyc.toFixed(2) : '—'} <span style="font-size:11px;color:var(--text-muted)">g/L</span></td>
       <td class="td-mono">${e.carbs || '—'} <span style="font-size:11px;color:var(--text-muted)">g</span></td>
@@ -1770,8 +1958,9 @@ function init() {
   profile = JSON.parse(localStorage.getItem(KEY_PROFILE) || JSON.stringify(DEFAULT_PROFILE));
   modifs  = JSON.parse(localStorage.getItem(KEY_MODIFS)  || '[]');
 
-  // Set today's date
+  // Set today's date & time
   document.getElementById('f-date').value = today();
+  document.getElementById('f-time').value = nowTime();
 
   // Event listeners
   ['f-glyc','f-carbs','f-meal'].forEach(id => {
@@ -1792,6 +1981,24 @@ function parseNum(v) {
   return parseFloat(String(v).replace(',', '.')) || 0;
 }
 
+// Parse glucides : valeur directe OU formule =30+20+15
+function parseCarbs(raw) {
+  const v = String(raw).trim();
+  if (v.startsWith('=')) {
+    const expr = v.slice(1).replace(/,/g, '.').replace(/[^0-9+\-*/.() ]/g, '');
+    try {
+      const result = Function('"use strict"; return (' + expr + ')')();
+      return isFinite(result) && result >= 0 ? Math.round(result * 100) / 100 : 0;
+    } catch { return 0; }
+  }
+  return parseFloat(v.replace(',', '.')) || 0;
+}
+
+function nowTime() {
+  const d = new Date();
+  return d.toTimeString().slice(0,5);
+}
+
 // ========== CALC ==========
 function calcRecommended(glyc, carbs, meal) {
   const ratioMap = {matin: profile.ratioMatin, midi: profile.ratioMidi, soir: profile.ratioSoir, nuit: 0};
@@ -1805,7 +2012,16 @@ function calcRecommended(glyc, carbs, meal) {
 
 function updateCalc() {
   const glyc  = parseNum(document.getElementById('f-glyc').value);
-  const carbs = parseNum(document.getElementById('f-carbs').value);
+  const carbsRaw = document.getElementById('f-carbs').value;
+  const carbs = parseCarbs(carbsRaw);
+  // Show formula result badge
+  const resEl = document.getElementById('f-carbs-result');
+  if (resEl) {
+    if (carbsRaw.trim().startsWith('=') && carbs > 0) {
+      resEl.textContent = '= ' + carbs + ' g';
+      resEl.style.display = 'block';
+    } else { resEl.style.display = 'none'; }
+  }
   const meal  = document.getElementById('f-meal').value;
 
   // Badge
@@ -1833,15 +2049,17 @@ function updateCalc() {
   document.getElementById('c-manque').textContent     = (r.manque >= 0 ? '+' : '') + r.manque.toFixed(2) + ' U';
 
   document.getElementById('c-correction').style.color = r.correction > 0 ? 'var(--orange)' : 'var(--green)';
+  updateIOB();
 }
 
 // ========== SAVE ENTRY ==========
 function saveEntry() {
   const glyc   = parseNum(document.getElementById('f-glyc').value);
-  const carbs  = parseNum(document.getElementById('f-carbs').value);
+  const carbs  = parseCarbs(document.getElementById('f-carbs').value);
   const insulin= parseNum(document.getElementById('f-insulin').value);
   const meal   = document.getElementById('f-meal').value;
   const date   = document.getElementById('f-date').value || today();
+  const time   = document.getElementById('f-time').value || nowTime();
   const comment= document.getElementById('f-comment').value.trim();
 
   if (!glyc && !carbs && !insulin) { showToast('⚠️ Remplissez au moins un champ.'); return; }
@@ -1850,7 +2068,7 @@ function saveEntry() {
 
   const entry = {
     id: Date.now(),
-    date, meal, glyc, carbs, insulin,
+    date, time, meal, glyc, carbs, insulin,
     comment,
     recommended: calc.total,
     manque: calc.manque,
@@ -1870,6 +2088,9 @@ function clearForm() {
   document.getElementById('f-insulin').value = '';
   document.getElementById('f-comment').value = '';
   document.getElementById('f-date').value = today();
+  document.getElementById('f-time').value = nowTime();
+  const resEl2 = document.getElementById('f-carbs-result');
+  if (resEl2) resEl2.style.display = 'none';
   updateCalc();
 }
 
@@ -1933,7 +2154,7 @@ function renderHistory() {
     const mealEmoji = {matin:'🌅',midi:'☀️',soir:'🌆',nuit:'🌙'}[e.meal] || '';
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td class="td-mono">${e.date}</td>
+      <td class="td-mono" style="white-space:nowrap">${e.date}<br><span style="font-size:10px;color:var(--text-muted)">${e.time || '—'}</span></td>
       <td>${mealEmoji} ${e.meal}</td>
       <td class="td-mono">${e.glyc ? e.glyc.toFixed(2) : '—'} <span style="font-size:11px;color:var(--text-muted)">g/L</span></td>
       <td class="td-mono">${e.carbs || '—'} <span style="font-size:11px;color:var(--text-muted)">g</span></td>
