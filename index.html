@@ -755,6 +755,12 @@
     transition: width 0.4s ease;
   }
 
+
+  .td-total-carbs { color: var(--orange); font-family: 'DM Mono', monospace; font-weight: 600; }
+  .td-total-ins   { color: var(--purple); font-family: 'DM Mono', monospace; font-weight: 600; }
+  .td-total-miss  { color: var(--red);    font-family: 'DM Mono', monospace; font-weight: 600; }
+  .td-total-miss-ok { color: var(--green); font-family: 'DM Mono', monospace; font-weight: 600; }
+
   input[type="date"], input[type="time"] {
     min-width: 0;
     width: 100%;
@@ -806,24 +812,6 @@
         ⚠️ Cet outil ne remplace pas un avis médical. Consultez votre médecin.
       </div>
     </div>
-    <div class="stats-bar">
-      <div class="stat-card">
-        <div class="stat-label">Entrées totales</div>
-        <div class="stat-value" id="stat-count" style="color:var(--accent)">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Glycémie moyenne</div>
-        <div class="stat-value" id="stat-glyc" style="color:var(--green)">—<span class="stat-unit">g/L</span></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Glucides moyens</div>
-        <div class="stat-value" id="stat-carbs" style="color:var(--orange)">—<span class="stat-unit">g</span></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Insuline moyenne</div>
-        <div class="stat-value" id="stat-insulin" style="color:var(--purple)">—<span class="stat-unit">U</span></div>
-      </div>
-    </div>
   </header>
 
   <!-- MAIN GRID -->
@@ -870,7 +858,7 @@
             <div class="form-group">
               <label>Glucides consommés (g)</label>
               <div style="position:relative">
-                <input type="text" id="f-carbs" placeholder="60  ou  =30+45+20" inputmode="decimal" autocomplete="off" autocorrect="off" spellcheck="false">
+                <input type="text" id="f-carbs" placeholder="60  ou  =30+45+20" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false">
                 <span id="f-carbs-result" style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);font-family:'DM Mono',monospace;font-size:12px;color:var(--green);pointer-events:none;background:var(--bg);padding:0 4px"></span>
               </div>
               <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);margin-top:2px">Formule : =30+45 → calcul auto</span>
@@ -945,6 +933,26 @@
   </div>
 
   <!-- TABS SECTION -->
+  <!-- STATS + RÉSUMÉ JOURNALIER -->
+  <div class="stats-bar" style="margin-bottom:20px">
+    <div class="stat-card">
+      <div class="stat-label">Entrées totales</div>
+      <div class="stat-value" id="stat-count" style="color:var(--accent)">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Glycémie moyenne</div>
+      <div class="stat-value" id="stat-glyc" style="color:var(--green)">—<span class="stat-unit">g/L</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Glucides moyens</div>
+      <div class="stat-value" id="stat-carbs" style="color:var(--orange)">—<span class="stat-unit">g</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Insuline moyenne</div>
+      <div class="stat-value" id="stat-insulin" style="color:var(--purple)">—<span class="stat-unit">U</span></div>
+    </div>
+  </div>
+
   <div class="tabs">
     <button class="tab active" onclick="switchTab('historique')">📋 Historique</button>
     <button class="tab" onclick="switchTab('analyse')">📊 Analyse</button>
@@ -955,6 +963,33 @@
 
   <!-- HISTORIQUE -->
   <div class="tab-content active" id="tab-historique">
+
+    <!-- Totaux journaliers -->
+    <div class="panel" style="margin-bottom:20px">
+      <div class="panel-header">
+        <div class="panel-title"><span class="icon">📅</span> Totaux par jour</div>
+      </div>
+      <div class="panel-body" style="padding:0">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Glucides total</th>
+                <th>Insuline injectée</th>
+                <th>Insuline manquée</th>
+                <th>Nb entrées</th>
+              </tr>
+            </thead>
+            <tbody id="daily-totals-body"></tbody>
+          </table>
+          <div class="empty-state" id="daily-totals-empty" style="display:none">
+            <div class="icon">📭</div><p>Aucune donnée</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="panel">
       <div class="panel-header">
         <div class="panel-title"><span class="icon">📋</span> Historique des entrées</div>
@@ -989,6 +1024,34 @@
 
   <!-- ANALYSE -->
   <div class="tab-content" id="tab-analyse">
+
+    <!-- Résumé journalier visuel -->
+    <div class="panel" style="margin-bottom:24px">
+      <div class="panel-header">
+        <div class="panel-title"><span class="icon">📅</span> Résumé journalier</div>
+      </div>
+      <div class="panel-body" style="padding:0">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Glucides total</th>
+                <th>Insuline injectée</th>
+                <th>Insuline manquée</th>
+                <th>Glycémie moy.</th>
+                <th>Nb repas</th>
+              </tr>
+            </thead>
+            <tbody id="daily-analyse-body"></tbody>
+          </table>
+          <div class="empty-state" id="daily-analyse-empty" style="display:none">
+            <div class="icon">📭</div><p>Aucune donnée</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div style="margin-bottom:24px">
       <div class="panel-title" style="margin-bottom:16px;font-size:16px"><span class="icon">📊</span> Analyse des ratios par repas</div>
       <div class="analysis-grid" id="analysis-ratios"></div>
@@ -1426,10 +1489,87 @@ function setMeal(meal) {
   updateCalc();
 }
 
+
+// ========== TOTAUX JOURNALIERS ==========
+function renderDailyTotals() {
+  // Build daily map
+  const dayMap = {};
+  entries.forEach(e => {
+    const d = e.date;
+    if (!dayMap[d]) dayMap[d] = { carbs: 0, insulin: 0, manque: 0, glycs: [], count: 0 };
+    dayMap[d].carbs   += e.carbs   || 0;
+    dayMap[d].insulin += e.insulin || 0;
+    dayMap[d].manque  += e.manque  || 0;
+    if (e.glyc) dayMap[d].glycs.push(e.glyc);
+    dayMap[d].count++;
+  });
+
+  const days = Object.keys(dayMap).sort((a,b) => b.localeCompare(a)); // most recent first
+
+  // ---- Historique tab ----
+  const tbody1 = document.getElementById('daily-totals-body');
+  const empty1 = document.getElementById('daily-totals-empty');
+  if (tbody1) {
+    tbody1.innerHTML = '';
+    if (!days.length) {
+      if (empty1) empty1.style.display = 'block';
+    } else {
+      if (empty1) empty1.style.display = 'none';
+      days.forEach(d => {
+        const row = dayMap[d];
+        const missCls = row.manque > 0.5 ? 'td-total-miss' : 'td-total-miss-ok';
+        const missSign = row.manque > 0 ? '+' : '';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="td-mono">${d}</td>
+          <td class="td-total-carbs">${row.carbs > 0 ? row.carbs + ' g' : '—'}</td>
+          <td class="td-total-ins">${row.insulin > 0 ? row.insulin.toFixed(1) + ' U' : '—'}</td>
+          <td class="${missCls}">${missSign}${row.manque.toFixed(1)} U</td>
+          <td class="td-mono" style="color:var(--text-muted)">${row.count}</td>`;
+        tbody1.appendChild(tr);
+      });
+    }
+  }
+
+  // ---- Analyse tab ----
+  const tbody2 = document.getElementById('daily-analyse-body');
+  const empty2 = document.getElementById('daily-analyse-empty');
+  if (tbody2) {
+    tbody2.innerHTML = '';
+    if (!days.length) {
+      if (empty2) empty2.style.display = 'block';
+    } else {
+      if (empty2) empty2.style.display = 'none';
+      days.forEach(d => {
+        const row = dayMap[d];
+        const avgGlyc = row.glycs.length ? (row.glycs.reduce((a,b)=>a+b,0) / row.glycs.length).toFixed(2) : '—';
+        const missCls = row.manque > 0.5 ? 'td-total-miss' : 'td-total-miss-ok';
+        const missSign = row.manque > 0 ? '+' : '';
+        // Color glyc
+        let glycColor = 'var(--text-dim)';
+        if (row.glycs.length) {
+          const g = parseFloat(avgGlyc);
+          glycColor = g <= profile.cible ? 'var(--green)' : g <= 1.80 ? 'var(--orange)' : 'var(--red)';
+        }
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="td-mono">${d}</td>
+          <td class="td-total-carbs">${row.carbs > 0 ? row.carbs + ' g' : '—'}</td>
+          <td class="td-total-ins">${row.insulin > 0 ? row.insulin.toFixed(1) + ' U' : '—'}</td>
+          <td class="${missCls}">${missSign}${row.manque.toFixed(1)} U</td>
+          <td class="td-mono" style="color:${glycColor}">${avgGlyc}${row.glycs.length ? ' g/L' : ''}</td>
+          <td class="td-mono" style="color:var(--text-muted)">${row.count}</td>`;
+        tbody2.appendChild(tr);
+      });
+    }
+  }
+}
+
 // ========== RENDER ALL ==========
 function renderAll() {
   renderStats();
   renderHistory();
+  renderDailyTotals();
   renderCharts();
   renderAnalysis();
   renderParams();
