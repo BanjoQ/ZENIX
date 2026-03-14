@@ -1,871 +1,2407 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Suivi glycémique</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    :root {
-      --bg: #020617;
-      --panel: rgba(15, 23, 42, 0.86);
-      --panel-2: rgba(30, 41, 59, 0.72);
-      --border: rgba(148, 163, 184, 0.18);
-      --text: #e5e7eb;
-    }
-    body {
-      background:
-        radial-gradient(circle at top right, rgba(56,189,248,.14), transparent 24%),
-        radial-gradient(circle at top left, rgba(59,130,246,.10), transparent 20%),
-        linear-gradient(180deg, #020617 0%, #0f172a 100%);
-      color: var(--text);
-      min-height: 100vh;
-    }
-    .glass {
-      background: var(--panel);
-      backdrop-filter: blur(14px);
-      border: 1px solid var(--border);
-      box-shadow: 0 18px 40px rgba(2, 6, 23, 0.35);
-    }
-    .glass-soft {
-      background: var(--panel-2);
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--border);
-    }
-    input[type="number"]::-webkit-outer-spin-button,
-    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-    input[type="number"] { -moz-appearance: textfield; }
-    .canvas-box { position: relative; height: 280px; }
-    @media (max-width: 768px) { .canvas-box { height: 230px; } }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Zenix">
+<meta name="theme-color" content="#080c14">
+<title>Zenix — Suivi glycémique</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAAGVklEQVR4nO3dMVLdSBSF4fsoBw4cOjTroVgFNYkXNYnLq6BYDxMSEpB5gnF7hJD0uqVW97m3/6/KVROMH2375yAJGy7W2ecvX3/1PgPqeXt9ufR8+83fOAGPpXXgTd4YEcOsTdynvgFCxpIzwz7lhQkZOc4Iu+oLEjL2qBl2lRciZNRQI+yboy9AzKilRkuHgiZm1Ha0qV0TT8hoYc8lSPFCEzNa2dNaUdDEjNZKm8sOmpjRS0l7WUETM3rLbfDwYztAydWgWWeoyGlxM2hihpprTa4GTcxQtdUm19AIZTFo1hnq1hploRHKh6BZZ3ix1CoLjVDeBc06w5t5syw0QvkTNOsMr6btstAIhaARyo0ZlxvwLzXMQiMUgkYoBI1QLlw/IxIWGqEQNEIhaIRC0AiFoBEKQSMUgkYoBI1QCBqhEDRCIWiEQtAIhaARCkEjFIJGKJ96H2DJ3eNz7yMUebq/7X0E/MZCIxSCFvXXP3/3PsIHimeaI2hBKRylgBTPtETyGnpU6rEk6Zw/vn3vfJKPWGgRazErRK58tjkWuoK7x+fdTzoUoyihttYsdCV3j8+7HjfmhNAz+py3rRKzGUFXxfPo/vhCM1eUrO6RoBWXUPFM17DQG1rFnKvlpYfXa3uCFqG2dDkUz0zQK9TWOWmxnF7X2YygpSgu3hrVsxL0gp7r3PsxnscbwSmCnvH2V1fxHkEfcNa1c6+V9r7OZgT9jrd1rhm15xvBKYLe6ewnG4pLqHimOYL+TfUx3TU1ljXKOpsRtDSlRVQ6yxaCNu11PvsGMcKN4BRBI5Thg1Ze5+SslY62zmaDB+3tMd01JVFHuhGcGjroEr2fbPRYSm/rbDZw0NHWOclZ3qjrbDZw0CV6r3PScjE9rrPZoEF7uBFcc/QGMeKN4NSQQSOu4YL2vM7J3pWOvs5mAwY9kmnAkW8Ep4YKOsI6J2csqfd1NuNLgYU3yjInwyx0pHVOai5qhHU2GyToqJ9EMasTYpSYzQYJuoSXdcay8EFHXufkyMJGWmezAYIuwTr7FzroiDeCa/YsbbR1NgseNMYTNuiR1jkpWdyI62wWOGiMKWTQI66zGf8Eyyxo0BhXuKBZ53N/jrpQQY/wSRRsCxV0idHXucbPVRQmaNYZZoGCLsE6138NFSGC5kZQ67V6ChE01v349j3sZwWXuA+addZ+zdbcB41102UeZaVdB806r1sKuPf3QGzBddDAnNugWed1W0scfaVdBj3qJ1FahuY1apdBl4i0zjlyFjjyDaK7oFnn2G/zKHdBl2Cd6/y/nrgKmhvBdWf9q29vK+0qaOAaN0GzzuvO/spJnlbaTdAjUgpJ6SxbXAQ96jrn4KuPvicfNI/pdCieaU4+6BKss8Zr9SQdNOu8rtf3WFFfaemgS4y2zlgmG/SoN4K9v5eg95WWDXpEyqHMqZ5VMuhR1zlHi5s3zzeIkkGPSHXxtiieWS5o1nldy+X0utKXz1++/up9iCmPj+qOvmP1vhHcony2JVIL7TFmaJEK+un+drjLCPUF9PYYj29e31kKRimKEkqXG2ZiCz2ytTAUglE+2xwLLcTLWiuGnLDQglIwSuEonmmJ3GM7M39PO0a7kVXGQiMUyYUG9mKhEQpBIxSCRigEjVAIGqEQNEIhaITC3+Xo4O7x+Wf676f724eeZ4mGT6w0No05UYra+ztb6EuOu8fnn+lH77N4MP998vj7FjboCH84uXjH/V/YoGurFc38w/jRD+sjvePmkLwpVLuOW4rmyLkUfk1Lnu5vH2r93vf6M5Rb6FqLU3sJR/F0f/uQfux9jZ4fNSQXupYRIq65qhF8ent94dHdFerRqJ2nl7fXl8vFzEwtaOV4kKfHn6Fs0MAeb68vF7mbQuCIG7P/yu59EOCI1DALjVAIGqH8CZrLDng1bZeFRijvgmal4c28WRYaoXwImpWGF0utstAIZTFoVhrq1hploRHKatCsNFRttbm50EQNNdeavHrJQdRQkdMi19AIJStoVhq95TaYvdBEjV5K2iu65CBqtFbaXPE1NFGjlT2tHYqTf1yLMxwZzUNPOVhr1Ha0qcOP7YgatdRoqWqMXIJgj5qjeMq6EjZynPHR/dTLBcLGkjMvU5tc/xI2zNrcbzW/oSPusbR+aND9CQWBx9L7qde/M+i8tHx9kzoAAAAASUVORK5CYII=">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWQxIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzRmYzNmNztzdG9wLW9wYWNpdHk6MSIgLz4KICAgICAgPHN0b3Agb2Zmc2V0PSI1MCUiIHN0eWxlPSJzdG9wLWNvbG9yOiMyNmE2OWE7c3RvcC1vcGFjaXR5OjEiIC8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzY5ZjBhZTtzdG9wLW9wYWNpdHk6MSIgLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWQyIiB4MT0iMTAwJSIgeTE9IjAlIiB4Mj0iMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzY5ZjBhZTtzdG9wLW9wYWNpdHk6MC44IiAvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM0ZmMzZjc7c3RvcC1vcGFjaXR5OjAuOCIgLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJnbG93Ij4KICAgICAgPGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iOCIgcmVzdWx0PSJjb2xvcmVkQmx1ciIvPgogICAgICA8ZmVNZXJnZT4KICAgICAgICA8ZmVNZXJnZU5vZGUgaW49ImNvbG9yZWRCbHVyIi8+CiAgICAgICAgPGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+CiAgICAgIDwvZmVNZXJnZT4KICAgIDwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdy1zb2Z0Ij4KICAgICAgPGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJjb2xvcmVkQmx1ciIvPgogICAgICA8ZmVNZXJnZT4KICAgICAgICA8ZmVNZXJnZU5vZGUgaW49ImNvbG9yZWRCbHVyIi8+CiAgICAgICAgPGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+CiAgICAgIDwvZmVNZXJnZT4KICAgIDwvZmlsdGVyPgogIDwvZGVmcz4KCiAgPCEtLSBCYWNrZ3JvdW5kIHJvdW5kZWQgc3F1YXJlIC0tPgogIDxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTEwIiBmaWxsPSIjMDgwYzE0Ii8+CiAgPHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHJ4PSIxMTAiIGZpbGw9InVybCgjZ3JhZDEpIiBvcGFjaXR5PSIwLjA4Ii8+CgogIDwhLS0gRmx1aWQgd2F2ZSBiYWNrZ3JvdW5kIGN1cnZlcyAtLT4KICA8cGF0aCBkPSJNIDYwIDMwMCBRIDE2MCAyNDAgMjU2IDI4MCBRIDM1MiAzMjAgNDUyIDI2MCIgc3Ryb2tlPSJ1cmwoI2dyYWQxKSIgc3Ryb2tlLXdpZHRoPSIxLjUiIGZpbGw9Im5vbmUiIG9wYWNpdHk9IjAuMiIvPgogIDxwYXRoIGQ9Ik0gNjAgMzMwIFEgMTYwIDI3MCAyNTYgMzEwIFEgMzUyIDM1MCA0NTIgMjkwIiBzdHJva2U9InVybCgjZ3JhZDIpIiBzdHJva2Utd2lkdGg9IjEiIGZpbGw9Im5vbmUiIG9wYWNpdHk9IjAuMTUiLz4KICA8cGF0aCBkPSJNIDYwIDI3MCBRIDE2MCAyMTAgMjU2IDI1MCBRIDM1MiAyOTAgNDUyIDIzMCIgc3Ryb2tlPSJ1cmwoI2dyYWQxKSIgc3Ryb2tlLXdpZHRoPSIxIiBmaWxsPSJub25lIiBvcGFjaXR5PSIwLjEyIi8+CgogIDwhLS0gWiBsZXR0ZXIgLSBib2xkLCB1c2luZyBzdHJva2UgcGF0aCAtLT4KICA8IS0tIFogdG9wIGJhciAtLT4KICA8bGluZSB4MT0iMTA4IiB5MT0iMTQ4IiB4Mj0iMjMwIiB5Mj0iMTQ4IiBzdHJva2U9InVybCgjZ3JhZDEpIiBzdHJva2Utd2lkdGg9IjI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbHRlcj0idXJsKCNnbG93LXNvZnQpIi8+CiAgPCEtLSBaIGRpYWdvbmFsIC0tPgogIDxsaW5lIHgxPSIyMjUiIHkxPSIxNTMiIHgyPSIxMTMiIHkyPSIzNTkiIHN0cm9rZT0idXJsKCNncmFkMSkiIHN0cm9rZS13aWR0aD0iMjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsdGVyPSJ1cmwoI2dsb3ctc29mdCkiLz4KICA8IS0tIFogYm90dG9tIGJhciAtLT4KICA8bGluZSB4MT0iMTA4IiB5MT0iMzY0IiB4Mj0iMjMwIiB5Mj0iMzY0IiBzdHJva2U9InVybCgjZ3JhZDEpIiBzdHJva2Utd2lkdGg9IjI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbHRlcj0idXJsKCNnbG93LXNvZnQpIi8+CgogIDwhLS0gRmx1aWQgY29ubmVjdG9yIGN1cnZlIGJldHdlZW4gWiBhbmQgWCAtLT4KICA8cGF0aCBkPSJNIDI0MiAyNTYgUSAyNjAgMjQwIDI3MCAyNTYiIHN0cm9rZT0idXJsKCNncmFkMikiIHN0cm9rZS13aWR0aD0iNCIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iMC43IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KCiAgPCEtLSBYIGxldHRlciAtIGJvbGQgY3Jvc3NpbmcgZGlhZ29uYWxzIC0tPgogIDwhLS0gWCBkaWFnb25hbCB0b3AtbGVmdCB0byBib3R0b20tcmlnaHQgLS0+CiAgPGxpbmUgeDE9IjI4MiIgeTE9IjE0OCIgeDI9IjQwNCIgeTI9IjM2NCIgc3Ryb2tlPSJ1cmwoI2dyYWQyKSIgc3Ryb2tlLXdpZHRoPSIyOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWx0ZXI9InVybCgjZ2xvdy1zb2Z0KSIvPgogIDwhLS0gWCBkaWFnb25hbCB0b3AtcmlnaHQgdG8gYm90dG9tLWxlZnQgLS0+CiAgPGxpbmUgeDE9IjQwNCIgeTE9IjE0OCIgeDI9IjI4MiIgeTI9IjM2NCIgc3Ryb2tlPSJ1cmwoI2dyYWQyKSIgc3Ryb2tlLXdpZHRoPSIyOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWx0ZXI9InVybCgjZ2xvdy1zb2Z0KSIvPgoKICA8IS0tIEZsdWlkIGZsb3cgZG90cyAvIGRyb3BsZXRzIGFsb25nIGEgc2luZSB3YXZlIC0tPgogIDxjaXJjbGUgY3g9IjExMCIgY3k9IjQyMCIgcj0iNCIgZmlsbD0iIzRmYzNmNyIgb3BhY2l0eT0iMC41Ii8+CiAgPGNpcmNsZSBjeD0iMTYwIiBjeT0iNDEwIiByPSIzIiBmaWxsPSIjMjZhNjlhIiBvcGFjaXR5PSIwLjUiLz4KICA8Y2lyY2xlIGN4PSIyMTUiIGN5PSI0MTgiIHI9IjUiIGZpbGw9IiM2OWYwYWUiIG9wYWNpdHk9IjAuNiIvPgogIDxjaXJjbGUgY3g9IjI3MCIgY3k9IjQwNiIgcj0iMyIgZmlsbD0iIzRmYzNmNyIgb3BhY2l0eT0iMC40Ii8+CiAgPGNpcmNsZSBjeD0iMzI1IiBjeT0iNDE1IiByPSI0IiBmaWxsPSIjMjZhNjlhIiBvcGFjaXR5PSIwLjUiLz4KICA8Y2lyY2xlIGN4PSIzODAiIGN5PSI0MDgiIHI9IjMiIGZpbGw9IiM2OWYwYWUiIG9wYWNpdHk9IjAuNSIvPgogIDxjaXJjbGUgY3g9IjQzMCIgY3k9IjQyMCIgcj0iNSIgZmlsbD0iIzRmYzNmNyIgb3BhY2l0eT0iMC40Ii8+CgogIDwhLS0gRmx1aWQgd2F2ZSBsaW5lIGF0IGJvdHRvbSAtLT4KICA8cGF0aCBkPSJNIDkwIDQzMCBRIDE0MCA0MTggMTkwIDQzMCBRIDI0MCA0NDIgMjkwIDQyOCBRIDM0MCA0MTQgMzkwIDQyOCBRIDQyMCA0MzYgNDUwIDQyOCIKICAgICAgICBzdHJva2U9InVybCgjZ3JhZDEpIiBzdHJva2Utd2lkdGg9IjIuNSIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iMC40NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CgogIDwhLS0gR2xvdyBhY2NlbnQgZG90cyBvbiBaIGNvcm5lcnMgLS0+CiAgPGNpcmNsZSBjeD0iMTY5IiBjeT0iMTQ4IiByPSI1IiBmaWxsPSIjNGZjM2Y3IiBvcGFjaXR5PSIwLjgiIGZpbHRlcj0idXJsKCNnbG93KSIvPgogIDxjaXJjbGUgY3g9IjE2OSIgY3k9IjM2NCIgcj0iNSIgZmlsbD0iIzY5ZjBhZSIgb3BhY2l0eT0iMC44IiBmaWx0ZXI9InVybCgjZ2xvdykiLz4KICA8IS0tIEdsb3cgb24gWCBjZW50ZXIgY3Jvc3MgLS0+CiAgPGNpcmNsZSBjeD0iMzQzIiBjeT0iMjU2IiByPSI2IiBmaWxsPSIjNGZjM2Y3IiBvcGFjaXR5PSIwLjYiIGZpbHRlcj0idXJsKCNnbG93KSIvPgo8L3N2Zz4K">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c14;
+    --surface: rgba(255,255,255,0.04);
+    --surface-hover: rgba(255,255,255,0.07);
+    --border: rgba(255,255,255,0.08);
+    --border-strong: rgba(255,255,255,0.15);
+    --text: #e8eaf0;
+    --text-dim: rgba(232,234,240,0.5);
+    --text-muted: rgba(232,234,240,0.3);
+    --accent: #4fc3f7;
+    --accent-glow: rgba(79,195,247,0.15);
+    --green: #69f0ae;
+    --green-glow: rgba(105,240,174,0.15);
+    --orange: #ffb74d;
+    --orange-glow: rgba(255,183,77,0.15);
+    --red: #ff5252;
+    --red-glow: rgba(255,82,82,0.15);
+    --purple: #ce93d8;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 10%, rgba(79,195,247,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 50% at 80% 90%, rgba(105,240,174,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 30% at 60% 50%, rgba(206,147,216,0.03) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 1; }
+
+  /* ---- HEADER ---- */
+  header {
+    padding: 32px 0 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .logo h1 {
+    font-size: 22px; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--green));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+  }
+
+  .logo .version {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+  }
+
+  .disclaimer {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    background: rgba(255,183,77,0.06);
+    border: 1px solid rgba(255,183,77,0.15);
+    padding: 8px 14px;
+    border-radius: 8px;
+    max-width: 400px;
+  }
+
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    backdrop-filter: blur(10px);
+    transition: all 0.2s;
+  }
+
+  .stat-card:hover { background: var(--surface-hover); border-color: var(--border-strong); }
+
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 6px;
+  }
+
+  .stat-value {
+    font-size: 28px; font-weight: 700;
+    line-height: 1;
+  }
+
+  .stat-unit {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-weight: 400;
+    margin-left: 4px;
+  }
+
+  /* ---- MAIN LAYOUT ---- */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  /* ---- GLASS PANEL ---- */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    backdrop-filter: blur(20px);
+    overflow: hidden;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel-title {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .panel-title .icon { font-size: 16px; }
+
+  .panel-body { padding: 24px; }
+
+  /* ---- FORM ---- */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+
+  label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+
+  input, select, textarea {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    padding: 10px 14px;
+    outline: none;
+    transition: all 0.2s;
+    width: 100%;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    background: rgba(79,195,247,0.05);
+    box-shadow: 0 0 0 3px rgba(79,195,247,0.1);
+  }
+
+  select option { background: #1a1f2e; }
+  textarea { resize: vertical; min-height: 60px; }
+
+  /* ---- QUICK BUTTONS ---- */
+  .quick-btns {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .quick-btn {
+    padding: 9px 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text-dim);
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .quick-btn:hover {
+    background: var(--accent-glow);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ---- CALC PREVIEW ---- */
+  .calc-preview {
+    background: rgba(79,195,247,0.05);
+    border: 1px solid rgba(79,195,247,0.2);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    margin: 16px 0;
+  }
+
+  .calc-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    font-size: 13px;
+  }
+
+  .calc-label { color: var(--text-dim); font-family: 'DM Mono', monospace; font-size: 12px; }
+  .calc-value { font-weight: 700; font-family: 'DM Mono', monospace; }
+
+  .calc-total {
+    border-top: 1px solid rgba(79,195,247,0.2);
+    margin-top: 8px;
+    padding-top: 10px;
+    font-size: 16px;
+  }
+
+  .glyc-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .badge-green { background: var(--green-glow); border: 1px solid rgba(105,240,174,0.3); color: var(--green); }
+  .badge-orange { background: var(--orange-glow); border: 1px solid rgba(255,183,77,0.3); color: var(--orange); }
+  .badge-red { background: var(--red-glow); border: 1px solid rgba(255,82,82,0.3); color: var(--red); }
+
+  /* ---- BUTTONS ---- */
+  .btn {
+    padding: 11px 20px;
+    border-radius: var(--radius-sm);
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #29b6f6);
+    color: #080c14;
+    width: 100%;
+    justify-content: center;
+    margin-top: 4px;
+  }
+
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(79,195,247,0.3); }
+
+  .btn-secondary {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+
+  .btn-secondary:hover { background: var(--surface-hover); border-color: var(--border-strong); color: var(--text); }
+
+  .btn-danger {
+    background: var(--red-glow);
+    border: 1px solid rgba(255,82,82,0.3);
+    color: var(--red);
+  }
+
+  .btn-danger:hover { background: rgba(255,82,82,0.2); }
+
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+  /* ---- TABS ---- */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: rgba(0,0,0,0.2);
+    border-radius: var(--radius-sm);
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .tab {
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--text-dim);
+    transition: all 0.2s;
+    border: none;
+    background: transparent;
+    white-space: nowrap;
+  }
+
+  .tab.active {
+    background: var(--surface-hover);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ---- TABLE ---- */
+  .table-wrap { overflow-x: auto; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+  th {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: middle;
+    color: var(--text-dim);
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); color: var(--text); }
+
+  .td-mono { font-family: 'DM Mono', monospace; }
+
+  .diff-pos { color: var(--red); }
+  .diff-neg { color: var(--green); }
+  .diff-zero { color: var(--text-muted); }
+
+  /* ---- CHART GRID ---- */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+
+  .chart-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .chart-title::before {
+    content: '';
+    width: 3px; height: 16px;
+    background: linear-gradient(var(--accent), var(--green));
+    border-radius: 2px;
+    display: inline-block;
+  }
+
+  .chart-wrap { position: relative; height: 200px; }
+
+  .chart-wide { grid-column: 1 / -1; }
+
+  /* ---- ANALYSIS ---- */
+  .analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .analysis-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+
+  .analysis-meal {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .analysis-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 4px 0;
+    color: var(--text-dim);
+  }
+
+  .analysis-dir {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .dir-up { background: var(--red-glow); color: var(--red); border: 1px solid rgba(255,82,82,0.2); }
+  .dir-down { background: var(--green-glow); color: var(--green); border: 1px solid rgba(105,240,174,0.2); }
+  .dir-ok { background: rgba(79,195,247,0.1); color: var(--accent); border: 1px solid rgba(79,195,247,0.2); }
+
+  /* ---- PARAMS PANEL ---- */
+  .params-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .param-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .param-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+
+  .param-val {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  /* ---- HISTORY LOG ---- */
+  .history-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    gap: 12px;
+    align-items: start;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .history-item:last-child { border-bottom: none; }
+
+  .history-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .history-desc { color: var(--text-dim); }
+
+  .history-old { color: var(--red); font-family: 'DM Mono', monospace; font-size: 12px; }
+  .history-new { color: var(--green); font-family: 'DM Mono', monospace; font-size: 12px; }
+
+  /* ---- MODAL ---- */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+  }
+
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: #0e1520;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    padding: 28px;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: scale(0.95);
+    transition: transform 0.25s;
+  }
+
+  .modal-overlay.open .modal { transform: scale(1); }
+
+  .modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px;
+    transition: color 0.2s;
+  }
+
+  .modal-close:hover { color: var(--text); }
+
+  /* ---- EXPORT SECTION ---- */
+  .export-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  /* ---- EMPTY STATE ---- */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text-muted);
+  }
+
+  .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  /* ---- SCROLLBAR ---- */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+  /* ---- RESPONSIVE ---- */
+  @media (max-width: 1100px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .analysis-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 700px) {
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .charts-grid { grid-template-columns: 1fr; }
+    .chart-wide { grid-column: auto; }
+    .analysis-grid { grid-template-columns: 1fr; }
+    .export-grid { grid-template-columns: 1fr; }
+    .params-grid { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-group.full { grid-column: auto; }
+  }
+
+  /* ---- TOAST ---- */
+  .toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    padding: 12px 18px;
+    font-size: 13px;
+    color: var(--text);
+    z-index: 200;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s;
+    backdrop-filter: blur(20px);
+    max-width: 320px;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* Toggle */
+  .section-toggle {
+    background: none; border: none;
+    color: var(--text-muted); cursor: pointer;
+    font-size: 14px; padding: 2px;
+    transition: color 0.2s;
+  }
+  .section-toggle:hover { color: var(--text); }
+
+  .collapsible { transition: all 0.3s; }
+
+  /* Badge row */
+  .badge-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .sensitivity-card {
+    background: rgba(206,147,216,0.06);
+    border: 1px solid rgba(206,147,216,0.2);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+  }
+
+  .sensitivity-card .s-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--purple);
+    margin-bottom: 8px;
+  }
+
+  .s-row { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; color: var(--text-dim); }
+  .s-val { font-family: 'DM Mono', monospace; font-weight: 600; color: var(--purple); }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.5);
+    cursor: pointer;
+  }
+</style>
 </head>
-<body class="antialiased">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-    <header class="mb-6 sm:mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-      <div>
-        <p class="text-sky-300 text-sm uppercase tracking-[0.2em]">Suivi glycémique</p>
-        <h1 class="text-3xl sm:text-4xl font-bold mt-1">Dashboard diabète</h1>
-        <p class="text-slate-300 mt-2 max-w-3xl">Saisie rapide, calcul instantané, historique local, commentaires et suivi de tes paramètres.</p>
-      </div>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full lg:w-auto">
-        <div class="glass rounded-2xl p-4 min-w-[130px]"><div class="text-xs text-slate-400">Entrées</div><div id="kpiEntries" class="text-2xl font-semibold mt-1">0</div></div>
-        <div class="glass rounded-2xl p-4 min-w-[130px]"><div class="text-xs text-slate-400">Moy. glycémie</div><div id="kpiAvgGlycemia" class="text-2xl font-semibold mt-1">0</div></div>
-        <div class="glass rounded-2xl p-4 min-w-[130px]"><div class="text-xs text-slate-400">Moy. glucides</div><div id="kpiAvgCarbs" class="text-2xl font-semibold mt-1">0</div></div>
-        <div class="glass rounded-2xl p-4 min-w-[130px]"><div class="text-xs text-slate-400">Dose moy.</div><div id="kpiAvgInsulin" class="text-2xl font-semibold mt-1">0</div></div>
-      </div>
-    </header>
+<body>
 
-    <div class="grid grid-cols-1 gap-6">
-      <section class="glass rounded-3xl p-5 sm:p-6 h-fit">
-        <div class="flex items-center justify-between mb-5">
-          <div>
-            <h2 class="text-xl font-semibold">Saisie rapide</h2>
-            <p class="text-sm text-slate-400 mt-1">Une entrée par repas ou correction nocturne, en quelques secondes.</p>
-          </div>
-          <span class="text-xs px-3 py-1 rounded-full bg-sky-500/15 text-sky-300 border border-sky-400/20">v1 front-end</span>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-top">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 512 512" width="36" height="36" xmlns="http://www.w3.org/2000/svg" style="border-radius:9px;display:block">
+            <defs>
+              <linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#4fc3f7"/>
+                <stop offset="50%" stop-color="#26a69a"/>
+                <stop offset="100%" stop-color="#69f0ae"/>
+              </linearGradient>
+              <linearGradient id="lg2" x1="100%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#69f0ae" stop-opacity="0.9"/>
+                <stop offset="100%" stop-color="#4fc3f7" stop-opacity="0.9"/>
+              </linearGradient>
+            </defs>
+            <rect width="512" height="512" fill="#080c14"/>
+            <rect width="512" height="512" fill="url(#lg1)" opacity="0.1"/>
+            <line x1="108" y1="148" x2="230" y2="148" stroke="url(#lg1)" stroke-width="28" stroke-linecap="round"/>
+            <line x1="225" y1="153" x2="113" y2="359" stroke="url(#lg1)" stroke-width="28" stroke-linecap="round"/>
+            <line x1="108" y1="364" x2="230" y2="364" stroke="url(#lg1)" stroke-width="28" stroke-linecap="round"/>
+            <line x1="282" y1="148" x2="404" y2="364" stroke="url(#lg2)" stroke-width="28" stroke-linecap="round"/>
+            <line x1="404" y1="148" x2="282" y2="364" stroke="url(#lg2)" stroke-width="28" stroke-linecap="round"/>
+            <path d="M 80 430 Q 140 415 200 430 Q 260 445 320 428 Q 380 411 450 430" stroke="url(#lg1)" stroke-width="3" fill="none" opacity="0.6" stroke-linecap="round"/>
+            <circle cx="200" cy="430" r="5" fill="#4fc3f7" opacity="0.8"/>
+            <circle cx="320" cy="428" r="4" fill="#69f0ae" opacity="0.8"/>
+          </svg>
         </div>
+        <div>
+          <h1>Zenix</h1>
+          <div class="version">v1.0 — usage personnel uniquement</div>
+        </div>
+      </div>
+      <div class="disclaimer">
+        ⚠️ Cet outil ne remplace pas un avis médical. Consultez votre médecin.
+      </div>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-label">Entrées totales</div>
+        <div class="stat-value" id="stat-count" style="color:var(--accent)">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Glycémie moyenne</div>
+        <div class="stat-value" id="stat-glyc" style="color:var(--green)">—<span class="stat-unit">g/L</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Glucides moyens</div>
+        <div class="stat-value" id="stat-carbs" style="color:var(--orange)">—<span class="stat-unit">g</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Insuline moyenne</div>
+        <div class="stat-value" id="stat-insulin" style="color:var(--purple)">—<span class="stat-unit">U</span></div>
+      </div>
+    </div>
+  </header>
 
-        <form id="entryForm" class="space-y-4">
-          <div class="glass-soft rounded-2xl p-3">
-            <div class="flex items-center justify-between gap-3 mb-3">
-              <span class="text-sm text-slate-300 font-medium">Saisie express</span>
-              <span class="text-xs text-slate-500">Raccourcis repas</span>
-            </div>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <button type="button" data-quick-meal="matin" class="quick-meal-btn rounded-2xl px-4 py-3 text-sm border border-slate-700 bg-slate-900/60 hover:bg-slate-800 transition">☀️ Matin</button>
-              <button type="button" data-quick-meal="midi" class="quick-meal-btn rounded-2xl px-4 py-3 text-sm border border-slate-700 bg-slate-900/60 hover:bg-slate-800 transition">🌤️ Midi</button>
-              <button type="button" data-quick-meal="soir" class="quick-meal-btn rounded-2xl px-4 py-3 text-sm border border-slate-700 bg-slate-900/60 hover:bg-slate-800 transition">🌙 Soir</button>
-              <button type="button" data-quick-meal="nuit" class="quick-meal-btn rounded-2xl px-4 py-3 text-sm border border-slate-700 bg-slate-900/60 hover:bg-slate-800 transition">🌘 Nuit</button>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
-              <div class="rounded-2xl bg-slate-950/50 border border-slate-800 px-3 py-2"><div class="text-[11px] uppercase tracking-wide text-slate-500">Dernière glycémie</div><div id="lastGlycemiaHint" class="text-sm text-slate-200 mt-1">—</div></div>
-              <div class="rounded-2xl bg-slate-950/50 border border-slate-800 px-3 py-2"><div class="text-[11px] uppercase tracking-wide text-slate-500">Derniers glucides</div><div id="lastCarbsHint" class="text-sm text-slate-200 mt-1">—</div></div>
-              <div class="rounded-2xl bg-slate-950/50 border border-slate-800 px-3 py-2"><div class="text-[11px] uppercase tracking-wide text-slate-500">Dernière dose injectée</div><div id="lastInjectedHint" class="text-sm text-slate-200 mt-1">—</div></div>
-            </div>
-            <div class="mt-3 flex flex-wrap gap-2">
-              <button type="button" id="reuseLastBtn" class="rounded-2xl bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-400/20 px-3 py-2 text-sm">Réutiliser dernier repas similaire</button>
-              <button type="button" id="focusGlycemiaBtn" class="rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-2 text-sm">Focus glycémie</button>
-            </div>
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- LEFT: FORM -->
+    <div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="icon">✏️</span> Saisie rapide</div>
+          <button class="btn btn-secondary btn-sm" id="btn-reuse">↺ Dernier repas</button>
+        </div>
+        <div class="panel-body">
+          <!-- Quick buttons -->
+          <div class="quick-btns">
+            <button class="quick-btn" onclick="setMeal('matin')">🌅 Matin</button>
+            <button class="quick-btn" onclick="setMeal('midi')">☀️ Midi</button>
+            <button class="quick-btn" onclick="setMeal('soir')">🌆 Soir</button>
+            <button class="quick-btn" onclick="setMeal('nuit')">🌙 Nuit</button>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <label class="block">
-              <span class="text-sm text-slate-300">Date</span>
-              <input id="date" type="date" class="mt-1 w-full rounded-2xl bg-slate-900/70 border border-slate-700 px-4 py-3 outline-none focus:ring-2 focus:ring-sky-400" />
-            </label>
-            <label class="block">
-              <span class="text-sm text-slate-300">Repas</span>
-              <select id="meal" class="mt-1 w-full rounded-2xl bg-slate-900/70 border border-slate-700 px-4 py-3 outline-none focus:ring-2 focus:ring-sky-400">
-                <option value="matin">Matin</option>
-                <option value="midi">Midi</option>
-                <option value="soir">Soir</option>
-                <option value="nuit">Nuit / correction</option>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Date</label>
+              <input type="date" id="f-date">
+            </div>
+            <div class="form-group">
+              <label>Repas</label>
+              <select id="f-meal">
+                <option value="matin">🌅 Matin</option>
+                <option value="midi">☀️ Midi</option>
+                <option value="soir">🌆 Soir</option>
+                <option value="nuit">🌙 Nuit / Correction</option>
               </select>
-            </label>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <label class="block">
-              <span class="text-sm text-slate-300">Glycémie actuelle</span>
-              <input id="glycemia" type="text" inputmode="decimal" placeholder="Ex. 1.85" class="mt-1 w-full rounded-2xl bg-slate-900/70 border border-slate-700 px-4 py-3 outline-none focus:ring-2 focus:ring-sky-400" />
-              <span class="text-xs text-slate-500 mt-1 block">Unité utilisée: g/L</span>
-            </label>
-            <label class="block">
-              <span class="text-sm text-slate-300">Glucides</span>
-              <input id="carbs" type="text" inputmode="decimal" placeholder="Ex. 65" class="mt-1 w-full rounded-2xl bg-slate-900/70 border border-slate-700 px-4 py-3 outline-none focus:ring-2 focus:ring-sky-400" />
-              <span id="carbsHelp" class="text-xs text-slate-500 mt-1 block">Grammes</span>
-            </label>
-            <label class="block">
-              <span class="text-sm text-slate-300">Insuline injectée</span>
-              <input id="insulinInjected" type="text" inputmode="decimal" placeholder="Ex. 8" class="mt-1 w-full rounded-2xl bg-slate-900/70 border border-slate-700 px-4 py-3 outline-none focus:ring-2 focus:ring-sky-400" />
-              <span class="text-xs text-slate-500 mt-1 block">Unités</span>
-            </label>
-          </div>
-
-          <label class="block">
-            <span class="text-sm text-slate-300">Commentaire</span>
-            <textarea id="comment" rows="3" placeholder="Observation, activité, repas inhabituel, correction nocturne, ressenti..." class="mt-1 w-full rounded-2xl bg-slate-900/70 border border-slate-700 px-4 py-3 outline-none focus:ring-2 focus:ring-sky-400 resize-y"></textarea>
-            <span class="text-xs text-slate-500 mt-1 block">Historisé avec chaque entrée</span>
-          </label>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="glass-soft rounded-2xl p-4">
-              <div class="text-sm text-slate-400">Insuline recommandée</div>
-              <div id="recommendedDisplay" class="text-3xl font-bold mt-2">0.0 U</div>
-              <div id="recommendedDetails" class="text-xs text-slate-500 mt-2">Glucides + correction glycémique</div>
             </div>
-            <div class="glass-soft rounded-2xl p-4">
-              <div class="text-sm text-slate-400">Manque estimé précédent</div>
-              <div id="missingDisplay" class="text-3xl font-bold mt-2">0.0 U</div>
-              <div class="text-xs text-slate-500 mt-2">Basé sur l’écart à la cible</div>
+            <div class="form-group">
+              <label>Glycémie actuelle (g/L)</label>
+              <input type="text" id="f-glyc" placeholder="ex: 1.80" inputmode="decimal">
+            </div>
+            <div class="form-group">
+              <label>Glucides consommés (g)</label>
+              <input type="text" id="f-carbs" placeholder="ex: 60" inputmode="decimal">
+            </div>
+            <div class="form-group full">
+              <label>Insuline injectée (U)</label>
+              <input type="text" id="f-insulin" placeholder="ex: 8" inputmode="decimal">
+            </div>
+            <div class="form-group full">
+              <label>Commentaire</label>
+              <textarea id="f-comment" placeholder="Notes libres..."></textarea>
             </div>
           </div>
 
-          <div id="glycemiaStatus" class="rounded-2xl px-4 py-3 text-sm font-medium bg-slate-800/70 border border-slate-700 text-slate-200">Renseigne une glycémie pour afficher l’état.</div>
-
-          <div class="glass-soft rounded-2xl p-4">
-            <div class="flex items-center justify-between gap-3">
-              <div>
-                <div class="text-sm text-slate-400">Repère visuel glycémie</div>
-                <div class="text-xs text-slate-500 mt-1">Cible dynamique · orange au-dessus de la cible · rouge &gt; 1.80</div>
-              </div>
-              <div id="glycemiaPill" class="text-xs px-3 py-1 rounded-full border border-slate-700 bg-slate-900/70 text-slate-300">Aucune valeur</div>
-            </div>
-            <div class="mt-3 h-3 rounded-full overflow-hidden bg-slate-900/70 border border-slate-800"><div class="h-full w-[55%] bg-gradient-to-r from-green-500 via-amber-400 to-red-500 opacity-90"></div></div>
+          <!-- Badge + calc -->
+          <div class="badge-row" style="margin-top:16px">
+            <span id="glyc-badge" class="glyc-badge" style="display:none"></span>
           </div>
 
-          <div class="flex flex-col sm:flex-row gap-3">
-            <button type="submit" class="flex-1 rounded-2xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold px-5 py-3 transition">Enregistrer l’entrée</button>
-            <button id="resetBtn" type="button" class="rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 px-5 py-3 transition">Réinitialiser</button>
-          </div>
-          <p class="text-xs text-slate-500">Astuce : touche <strong>Entrée</strong> pour enregistrer, y compris avec virgule décimale.</p>
-        </form>
-
-        <div class="mt-6 pt-5 border-t border-slate-800">
-          <div class="mb-5 glass-soft rounded-2xl p-4">
-            <div class="mb-4 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-              <div class="text-xs text-slate-500">Paramètres actifs · Matin <span id="activeRatioMorning">1.40</span> · Midi <span id="activeRatioNoon">1.10</span> · Soir <span id="activeRatioEvening">1.05</span> · Correction <span id="activeSensitivity">0.30</span></div>
-              <button type="button" id="editProfileBtn" class="rounded-2xl bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-400/20 px-4 py-2 text-sm">Modifier mes ratios</button>
+          <div class="calc-preview" id="calc-preview">
+            <div class="calc-row">
+              <span class="calc-label">Insuline glucides</span>
+              <span class="calc-value" id="c-ins-carbs">— U</span>
             </div>
-
-            <div id="profileEditor" class="hidden rounded-2xl border border-slate-800 bg-slate-950/40 p-4 mb-4">
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                <label class="block"><span class="text-sm text-slate-300">Ratio matin</span><input id="profileMorning" type="text" inputmode="decimal" class="mt-1 w-full rounded-2xl bg-slate-900/70 border border-slate-700 px-4 py-3 outline-none focus:ring-2 focus:ring-sky-400" /></label>
-                <label class="block"><span class="text-sm text-slate-300">Ratio midi</span><input id="profileNoon" type="text" inputmode="decimal" class="mt-1 w-full rounded-2xl bg-slate-900/70 border border-slate-700 px-4 py-3 outline-none focus:ring-2 focus:ring-sky-400" /></label>
-                <label class="block"><span class="text-sm text-slate-300">Ratio soir</span><input id="profileEvening" type="text" inputmode="decimal" class="mt-1 w-full rounded-2xl bg-slate-900/70 border border-slate-700 px-4 py-3 outline-none focus:ring-2 focus:ring-sky-400" /></label>
-                <label class="block"><span class="text-sm text-slate-300">Sensibilité correction</span><input id="profileSensitivity" type="text" inputmode="decimal" class="mt-1 w-full rounded-2xl bg-slate-900/70 border border-slate-700 px-4 py-3 outline-none focus:ring-2 focus:ring-sky-400" /></label>
-              </div>
-              <label class="block mt-3"><span class="text-sm text-slate-300">Commentaire de modification</span><input id="profileChangeComment" type="text" placeholder="Ex. ajustement après 3 semaines d'observation" class="mt-1 w-full rounded-2xl bg-slate-900/70 border border-slate-700 px-4 py-3 outline-none focus:ring-2 focus:ring-sky-400" /></label>
-              <div class="mt-3 flex flex-wrap gap-2">
-                <button type="button" id="saveProfileBtn" class="rounded-2xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold px-4 py-2">Enregistrer les paramètres</button>
-                <button type="button" id="cancelProfileBtn" class="rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2">Annuler</button>
-              </div>
+            <div class="calc-row">
+              <span class="calc-label">Correction glycémique</span>
+              <span class="calc-value" id="c-correction">— U</span>
             </div>
-
-            <div class="flex items-center justify-between gap-3 mb-3">
-              <div>
-                <h3 class="font-semibold">Analyse personnelle des ratios</h3>
-                <p class="text-xs text-slate-400 mt-1">Estimations calculées à partir de ton historique local, pour ton usage personnel uniquement.</p>
-              </div>
-              <span class="text-xs px-3 py-1 rounded-full bg-amber-500/10 text-amber-300 border border-amber-400/20">Aide à l’ajustement</span>
+            <div class="calc-row calc-total">
+              <span class="calc-label" style="color:var(--accent)">💉 Insuline recommandée</span>
+              <span class="calc-value" style="color:var(--accent);font-size:20px" id="c-total">— U</span>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="rounded-2xl bg-slate-950/50 border border-slate-800 p-4"><div class="text-sm text-slate-300 font-medium mb-2">Ratios suggérés par repas</div><div id="ratioSuggestions" class="space-y-2 text-sm text-slate-300"></div></div>
-              <div class="rounded-2xl bg-slate-950/50 border border-slate-800 p-4"><div class="text-sm text-slate-300 font-medium mb-2">Sensibilité observée</div><div id="sensitivityAnalysis" class="space-y-2 text-sm text-slate-300"></div></div>
-            </div>
-            <p class="text-xs text-slate-500 mt-3">Méthode simple : comparaison entre dose recommandée théorique, dose réellement injectée et glycémie observée. Ce n’est pas un avis médical.</p>
-            <div class="mt-4 rounded-2xl border border-slate-800 bg-slate-950/40 p-4">
-              <div class="flex items-center justify-between gap-3 mb-3"><div class="text-sm text-slate-300 font-medium">Historique des modifications de paramètres</div><div class="text-xs text-slate-500">Ratios et sensibilité</div></div>
-              <div id="profileChangeHistory" class="space-y-2 text-sm text-slate-300"></div>
+            <div class="calc-row" style="margin-top:4px">
+              <span class="calc-label">Manque estimé</span>
+              <span class="calc-value" id="c-manque" style="color:var(--orange)">— U</span>
             </div>
           </div>
 
-          <h3 class="font-semibold">Paramètres médicaux</h3>
-          <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-slate-300">
-            <div class="glass-soft rounded-2xl p-3">Cible glycémique: <strong>1.50 g/L</strong></div>
-            <div class="glass-soft rounded-2xl p-3">Correction: <strong>1 U = -0.30 g/L</strong></div>
-            <div class="glass-soft rounded-2xl p-3">Matin: <strong>1.4 U / 10 g</strong></div>
-            <div class="glass-soft rounded-2xl p-3">Midi: <strong>1.1 U / 10 g</strong></div>
-            <div class="glass-soft rounded-2xl p-3">Soir: <strong>1.05 U / 10 g</strong></div>
-            <div class="glass-soft rounded-2xl p-3">Nuit: <strong>correction seule</strong></div>
-          </div>
-          <p class="text-xs text-slate-500 mt-3">Cette application est un outil de suivi personnel et ne remplace pas un avis médical.</p>
+          <button class="btn btn-primary" id="btn-save">💾 Enregistrer l'entrée</button>
         </div>
-      </section>
-
-      <section class="space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="glass rounded-3xl p-5"><div class="flex items-center justify-between mb-4"><h3 class="text-lg font-semibold">Glycémie par entrée</h3><span class="text-xs text-slate-400">Graphique 1</span></div><div class="canvas-box"><canvas id="glycemiaChart"></canvas></div></div>
-          <div class="glass rounded-3xl p-5"><div class="flex items-center justify-between mb-4"><h3 class="text-lg font-semibold">Glucides consommés</h3><span class="text-xs text-slate-400">Graphique 2</span></div><div class="canvas-box"><canvas id="carbsChart"></canvas></div></div>
-          <div class="glass rounded-3xl p-5"><div class="flex items-center justify-between mb-4"><h3 class="text-lg font-semibold">Insuline recommandée vs injectée</h3><span class="text-xs text-slate-400">Graphique 3</span></div><div class="canvas-box"><canvas id="insulinChart"></canvas></div></div>
-          <div class="glass rounded-3xl p-5"><div class="flex items-center justify-between mb-4"><h3 class="text-lg font-semibold">Moyenne glycémie par repas</h3><span class="text-xs text-slate-400">Graphique 4</span></div><div class="canvas-box"><canvas id="mealAverageChart"></canvas></div></div>
-          <div class="glass rounded-3xl p-5 md:col-span-2"><div class="flex items-center justify-between mb-4"><h3 class="text-lg font-semibold">Tendance hebdomadaire</h3><span class="text-xs text-slate-400">Graphique 5</span></div><div class="canvas-box"><canvas id="weeklyTrendChart"></canvas></div></div>
-        </div>
-
-        <div class="glass rounded-3xl p-5 sm:p-6">
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-            <div><h3 class="text-lg font-semibold">Historique</h3><p class="text-sm text-slate-400">Modification directe des entrées sauvegardées localement.</p></div>
-            <div class="flex flex-wrap gap-2">
-              <button id="exportBtn" class="rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2 text-sm">Exporter JSON</button>
-              <label class="rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2 text-sm cursor-pointer">Importer JSON<input id="importInput" type="file" accept="application/json" class="hidden" /></label>
-              <button id="clearBtn" class="rounded-2xl bg-red-500/15 hover:bg-red-500/25 border border-red-400/20 text-red-300 px-4 py-2 text-sm">Vider les données</button>
-            </div>
-          </div>
-
-          <div class="mb-4 grid grid-cols-1 md:grid-cols-3 gap-3">
-            <input id="searchInput" type="text" placeholder="Rechercher une date ou un repas" class="rounded-2xl bg-slate-900/70 border border-slate-700 px-4 py-3 outline-none focus:ring-2 focus:ring-sky-400" />
-            <select id="filterMeal" class="rounded-2xl bg-slate-900/70 border border-slate-700 px-4 py-3 outline-none focus:ring-2 focus:ring-sky-400">
-              <option value="all">Tous les repas</option>
-              <option value="matin">Matin</option>
-              <option value="midi">Midi</option>
-              <option value="soir">Soir</option>
-              <option value="nuit">Nuit / correction</option>
-            </select>
-            <select id="sortOrder" class="rounded-2xl bg-slate-900/70 border border-slate-700 px-4 py-3 outline-none focus:ring-2 focus:ring-sky-400">
-              <option value="desc">Plus récentes d’abord</option>
-              <option value="asc">Plus anciennes d’abord</option>
-            </select>
-          </div>
-
-          <div class="overflow-x-auto rounded-2xl border border-slate-800">
-            <table class="min-w-full text-sm">
-              <thead class="bg-slate-900/80 text-slate-300">
-                <tr>
-                  <th class="text-left px-4 py-3">Date</th>
-                  <th class="text-left px-4 py-3">Repas</th>
-                  <th class="text-left px-4 py-3">Glycémie</th>
-                  <th class="text-left px-4 py-3">Glucides</th>
-                  <th class="text-left px-4 py-3">Injectée</th>
-                  <th class="text-left px-4 py-3">Recommandée</th>
-                  <th class="text-left px-4 py-3">Manque</th>
-                  <th class="text-left px-4 py-3">Commentaire</th>
-                  <th class="text-left px-4 py-3">Profil utilisé</th>
-                  <th class="text-left px-4 py-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="historyTable" class="divide-y divide-slate-800 bg-slate-950/40"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-    </div>
-  </div>
-
-  <div id="profileSnapshotModal" class="hidden fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm p-4">
-    <div class="max-w-xl mx-auto mt-10 rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl overflow-hidden">
-      <div class="flex items-center justify-between gap-3 px-5 py-4 border-b border-slate-800">
-        <div><h3 class="text-lg font-semibold">Profil utilisé pour cette entrée</h3><p id="profileSnapshotTitle" class="text-sm text-slate-400 mt-1"></p></div>
-        <button id="closeProfileSnapshotBtn" class="rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-2 text-sm">Fermer</button>
       </div>
-      <div id="profileSnapshotContent" class="p-5 space-y-3 text-sm text-slate-300"></div>
+    </div>
+
+    <!-- RIGHT: CHARTS -->
+    <div>
+      <div class="charts-grid">
+        <div class="chart-card chart-wide">
+          <div class="chart-title">Glycémie par entrée</div>
+          <div class="chart-wrap"><canvas id="chart-glyc"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Glucides consommés</div>
+          <div class="chart-wrap"><canvas id="chart-carbs"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Insuline : recommandée vs injectée</div>
+          <div class="chart-wrap"><canvas id="chart-ins"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Glycémie moyenne par repas</div>
+          <div class="chart-wrap"><canvas id="chart-meal"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Tendance glycémie — 7 jours</div>
+          <div class="chart-wrap"><canvas id="chart-trend"></canvas></div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div id="toast" class="fixed bottom-4 right-4 translate-y-6 opacity-0 pointer-events-none transition duration-300 rounded-2xl border border-slate-700 bg-slate-900/90 text-slate-100 px-4 py-3 shadow-2xl z-50 text-sm"></div>
+  <!-- TABS SECTION -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('historique')">📋 Historique</button>
+    <button class="tab" onclick="switchTab('analyse')">📊 Analyse</button>
+    <button class="tab" onclick="switchTab('params')">⚙️ Paramètres</button>
+    <button class="tab" onclick="switchTab('modifs')">🕒 Modif. paramètres</button>
+    <button class="tab" onclick="switchTab('export')">📦 Export / Import</button>
+  </div>
 
-  <script>
-    const DEFAULTS = {
-      targetGlycemia: 1.5,
-      correctionFactor: 0.3,
-      mealCoefficients: { matin: 1.4, midi: 1.1, soir: 1.05 },
-      storageKey: 'glycemia-tracker-entries-v2',
-      profileStorageKey: 'glycemia-tracker-profile-v2'
-    };
+  <!-- HISTORIQUE -->
+  <div class="tab-content active" id="tab-historique">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title"><span class="icon">📋</span> Historique des entrées</div>
+      </div>
+      <div class="panel-body">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Repas</th>
+                <th>Glycémie</th>
+                <th>Glucides</th>
+                <th>Injecté</th>
+                <th>Recommandé</th>
+                <th>Manque</th>
+                <th>Commentaire</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="history-body">
+            </tbody>
+          </table>
+          <div class="empty-state" id="history-empty">
+            <div class="icon">📭</div>
+            <p>Aucune entrée enregistrée</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    let entries = [];
-    let editingId = null;
-    let charts = {};
-    let profile = {
-      targetGlycemia: DEFAULTS.targetGlycemia,
-      correctionFactor: DEFAULTS.correctionFactor,
-      mealCoefficients: { ...DEFAULTS.mealCoefficients },
-      changeLog: []
-    };
+  <!-- ANALYSE -->
+  <div class="tab-content" id="tab-analyse">
+    <div style="margin-bottom:24px">
+      <div class="panel-title" style="margin-bottom:16px;font-size:16px"><span class="icon">📊</span> Analyse des ratios par repas</div>
+      <div class="analysis-grid" id="analysis-ratios"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title"><span class="icon">🎯</span> Analyse de sensibilité à l'insuline</div>
+      </div>
+      <div class="panel-body">
+        <div id="analysis-sensitivity"></div>
+      </div>
+    </div>
+  </div>
 
-    const $ = (id) => document.getElementById(id);
+  <!-- PARAMÈTRES -->
+  <div class="tab-content" id="tab-params">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title"><span class="icon">⚙️</span> Paramètres médicaux actifs</div>
+        <button class="btn btn-secondary btn-sm" onclick="openParamsModal()">✏️ Modifier</button>
+      </div>
+      <div class="panel-body">
+        <div class="params-grid" id="params-display"></div>
+      </div>
+    </div>
+  </div>
 
-    function round(value, decimals = 1) {
-      if (!Number.isFinite(value)) return 0;
-      const factor = Math.pow(10, decimals);
-      return Math.round(value * factor) / factor;
+  <!-- MODIFS -->
+  <div class="tab-content" id="tab-modifs">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title"><span class="icon">🕒</span> Historique des modifications de paramètres</div>
+      </div>
+      <div class="panel-body">
+        <div id="modifs-list">
+          <div class="empty-state" id="modifs-empty">
+            <div class="icon">🔧</div>
+            <p>Aucune modification enregistrée</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPORT -->
+  <div class="tab-content" id="tab-export">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title"><span class="icon">📦</span> Export / Import des données</div>
+      </div>
+      <div class="panel-body">
+        <div class="export-grid">
+          <button class="btn btn-secondary" onclick="exportData()">⬇️ Exporter JSON</button>
+          <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">⬆️ Importer JSON</button>
+          <button class="btn btn-danger" onclick="clearData()">🗑️ Supprimer tout</button>
+        </div>
+        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+        <p style="margin-top:16px;font-size:12px;color:var(--text-muted);font-family:'DM Mono',monospace;">
+          L'export inclut toutes vos entrées, vos paramètres médicaux et l'historique des modifications.
+          Toutes vos données restent 100% locales dans votre navigateur.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div style="height:48px"></div>
+</div>
+
+<!-- MODAL PARAMS -->
+<div class="modal-overlay" id="params-modal">
+  <div class="modal">
+    <div class="modal-title">
+      ✏️ Modifier mes ratios
+      <button class="modal-close" onclick="closeParamsModal()">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Cible glycémique (g/L)</label>
+        <input type="text" id="p-cible" placeholder="1.50">
+      </div>
+      <div class="form-group">
+        <label>Ratio matin (U/10g)</label>
+        <input type="text" id="p-matin" placeholder="1.4">
+      </div>
+      <div class="form-group">
+        <label>Ratio midi (U/10g)</label>
+        <input type="text" id="p-midi" placeholder="1.1">
+      </div>
+      <div class="form-group">
+        <label>Ratio soir (U/10g)</label>
+        <input type="text" id="p-soir" placeholder="1.05">
+      </div>
+      <div class="form-group">
+        <label>Sensibilité correction (g/L par U)</label>
+        <input type="text" id="p-sensibilite" placeholder="0.30">
+      </div>
+      <div class="form-group full">
+        <label>Commentaire modification</label>
+        <input type="text" id="p-comment" placeholder="Raison du changement...">
+      </div>
+    </div>
+    <button class="btn btn-primary" style="margin-top:20px" onclick="saveParams()">✅ Appliquer les modifications</button>
+  </div>
+</div>
+
+<!-- MODAL PROFIL SNAPSHOT -->
+<div class="modal-overlay" id="snapshot-modal">
+  <div class="modal">
+    <div class="modal-title">
+      🔍 Profil utilisé
+      <button class="modal-close" onclick="closeSnapshotModal()">✕</button>
+    </div>
+    <div id="snapshot-content"></div>
+  </div>
+</div>
+
+<!-- MODAL EDIT ENTRY -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-title">
+      ✏️ Modifier l'entrée
+      <button class="modal-close" onclick="closeEditModal()">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="e-date">
+      </div>
+      <div class="form-group">
+        <label>Repas</label>
+        <select id="e-meal">
+          <option value="matin">🌅 Matin</option>
+          <option value="midi">☀️ Midi</option>
+          <option value="soir">🌆 Soir</option>
+          <option value="nuit">🌙 Nuit</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Glycémie (g/L)</label>
+        <input type="text" id="e-glyc" inputmode="decimal">
+      </div>
+      <div class="form-group">
+        <label>Glucides (g)</label>
+        <input type="text" id="e-carbs" inputmode="decimal">
+      </div>
+      <div class="form-group full">
+        <label>Insuline injectée (U)</label>
+        <input type="text" id="e-insulin" inputmode="decimal">
+      </div>
+      <div class="form-group full">
+        <label>Commentaire</label>
+        <textarea id="e-comment"></textarea>
+      </div>
+    </div>
+    <input type="hidden" id="e-id">
+    <button class="btn btn-primary" style="margin-top:20px" onclick="saveEdit()">💾 Enregistrer</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== STORAGE KEYS ==========
+const KEY_ENTRIES = 'glycemia-tracker-entries';
+const KEY_PROFILE = 'glycemia-tracker-profile';
+const KEY_MODIFS  = 'glycemia-tracker-modifs';
+
+// ========== DEFAULT PROFILE ==========
+const DEFAULT_PROFILE = {
+  cible: 1.50,
+  ratioMatin: 1.4,
+  ratioMidi: 1.1,
+  ratioSoir: 1.05,
+  sensibilite: 0.30
+};
+
+// ========== STATE ==========
+let entries = [];
+let profile = {};
+let modifs = [];
+let charts = {};
+let editId = null;
+
+// ========== INIT ==========
+function init() {
+  entries = JSON.parse(localStorage.getItem(KEY_ENTRIES) || '[]');
+  profile = JSON.parse(localStorage.getItem(KEY_PROFILE) || JSON.stringify(DEFAULT_PROFILE));
+  modifs  = JSON.parse(localStorage.getItem(KEY_MODIFS)  || '[]');
+
+  // Set today's date
+  document.getElementById('f-date').value = today();
+
+  // Event listeners
+  ['f-glyc','f-carbs','f-meal'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updateCalc);
+  });
+  document.getElementById('btn-save').addEventListener('click', saveEntry);
+  document.getElementById('btn-reuse').addEventListener('click', reuseLastMeal);
+
+  updateCalc();
+  renderAll();
+}
+
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function parseNum(v) {
+  return parseFloat(String(v).replace(',', '.')) || 0;
+}
+
+// ========== CALC ==========
+function calcRecommended(glyc, carbs, meal) {
+  const ratioMap = {matin: profile.ratioMatin, midi: profile.ratioMidi, soir: profile.ratioSoir, nuit: 0};
+  const ratio = ratioMap[meal] || 0;
+  const insCarbs = (carbs / 10) * ratio;
+  const correction = (glyc - profile.cible) / profile.sensibilite;
+  const total = Math.max(0, insCarbs + correction);
+  const manque = correction;
+  return { insCarbs, correction, total, manque };
+}
+
+function updateCalc() {
+  const glyc  = parseNum(document.getElementById('f-glyc').value);
+  const carbs = parseNum(document.getElementById('f-carbs').value);
+  const meal  = document.getElementById('f-meal').value;
+
+  // Badge
+  const badge = document.getElementById('glyc-badge');
+  if (glyc > 0) {
+    badge.style.display = 'inline-flex';
+    if (glyc <= profile.cible) {
+      badge.className = 'glyc-badge badge-green';
+      badge.innerHTML = '🟢 ' + glyc.toFixed(2) + ' g/L';
+    } else if (glyc <= 1.80) {
+      badge.className = 'glyc-badge badge-orange';
+      badge.innerHTML = '🟠 ' + glyc.toFixed(2) + ' g/L';
+    } else {
+      badge.className = 'glyc-badge badge-red';
+      badge.innerHTML = '🔴 ' + glyc.toFixed(2) + ' g/L';
+    }
+  } else {
+    badge.style.display = 'none';
+  }
+
+  const r = calcRecommended(glyc, carbs, meal);
+  document.getElementById('c-ins-carbs').textContent  = r.insCarbs.toFixed(2) + ' U';
+  document.getElementById('c-correction').textContent = (r.correction >= 0 ? '+' : '') + r.correction.toFixed(2) + ' U';
+  document.getElementById('c-total').textContent      = r.total.toFixed(2) + ' U';
+  document.getElementById('c-manque').textContent     = (r.manque >= 0 ? '+' : '') + r.manque.toFixed(2) + ' U';
+
+  document.getElementById('c-correction').style.color = r.correction > 0 ? 'var(--orange)' : 'var(--green)';
+}
+
+// ========== SAVE ENTRY ==========
+function saveEntry() {
+  const glyc   = parseNum(document.getElementById('f-glyc').value);
+  const carbs  = parseNum(document.getElementById('f-carbs').value);
+  const insulin= parseNum(document.getElementById('f-insulin').value);
+  const meal   = document.getElementById('f-meal').value;
+  const date   = document.getElementById('f-date').value || today();
+  const comment= document.getElementById('f-comment').value.trim();
+
+  if (!glyc && !carbs && !insulin) { showToast('⚠️ Remplissez au moins un champ.'); return; }
+
+  const calc = calcRecommended(glyc, carbs, meal);
+
+  const entry = {
+    id: Date.now(),
+    date, meal, glyc, carbs, insulin,
+    comment,
+    recommended: calc.total,
+    manque: calc.manque,
+    profileSnapshot: { ...profile }
+  };
+
+  entries.unshift(entry);
+  save();
+  clearForm();
+  renderAll();
+  showToast('✅ Entrée enregistrée');
+}
+
+function clearForm() {
+  document.getElementById('f-glyc').value = '';
+  document.getElementById('f-carbs').value = '';
+  document.getElementById('f-insulin').value = '';
+  document.getElementById('f-comment').value = '';
+  document.getElementById('f-date').value = today();
+  updateCalc();
+}
+
+function reuseLastMeal() {
+  if (!entries.length) { showToast('Aucune entrée disponible'); return; }
+  const meal = document.getElementById('f-meal').value;
+  const similar = entries.find(e => e.meal === meal);
+  if (!similar) { showToast('Aucun repas similaire trouvé'); return; }
+  document.getElementById('f-carbs').value = similar.carbs;
+  updateCalc();
+  showToast('↺ Glucides du dernier repas similaire restaurés');
+}
+
+// ========== MEAL QUICK BTNS ==========
+function setMeal(meal) {
+  document.getElementById('f-meal').value = meal;
+  document.getElementById('f-glyc').focus();
+  updateCalc();
+}
+
+// ========== RENDER ALL ==========
+function renderAll() {
+  renderStats();
+  renderHistory();
+  renderCharts();
+  renderAnalysis();
+  renderParams();
+  renderModifs();
+}
+
+// ========== STATS ==========
+function renderStats() {
+  document.getElementById('stat-count').textContent = entries.length;
+  if (!entries.length) {
+    document.getElementById('stat-glyc').innerHTML = '—<span class="stat-unit">g/L</span>';
+    document.getElementById('stat-carbs').innerHTML = '—<span class="stat-unit">g</span>';
+    document.getElementById('stat-insulin').innerHTML = '—<span class="stat-unit">U</span>';
+    return;
+  }
+  const avg = arr => arr.reduce((a,b) => a+b,0) / arr.length;
+  const glycs = entries.filter(e=>e.glyc).map(e=>e.glyc);
+  const carbsA = entries.filter(e=>e.carbs).map(e=>e.carbs);
+  const insA = entries.filter(e=>e.insulin).map(e=>e.insulin);
+  document.getElementById('stat-glyc').innerHTML = (glycs.length ? avg(glycs).toFixed(2) : '—') + '<span class="stat-unit">g/L</span>';
+  document.getElementById('stat-carbs').innerHTML = (carbsA.length ? Math.round(avg(carbsA)) : '—') + '<span class="stat-unit">g</span>';
+  document.getElementById('stat-insulin').innerHTML = (insA.length ? avg(insA).toFixed(1) : '—') + '<span class="stat-unit">U</span>';
+}
+
+// ========== HISTORY ==========
+function renderHistory() {
+  const tbody = document.getElementById('history-body');
+  const empty = document.getElementById('history-empty');
+  tbody.innerHTML = '';
+
+  if (!entries.length) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  entries.forEach(e => {
+    const diff = e.insulin - e.recommended;
+    const diffCls = Math.abs(diff) < 0.5 ? 'diff-zero' : diff > 0 ? 'diff-neg' : 'diff-pos';
+    const mealEmoji = {matin:'🌅',midi:'☀️',soir:'🌆',nuit:'🌙'}[e.meal] || '';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="td-mono">${e.date}</td>
+      <td>${mealEmoji} ${e.meal}</td>
+      <td class="td-mono">${e.glyc ? e.glyc.toFixed(2) : '—'} <span style="font-size:11px;color:var(--text-muted)">g/L</span></td>
+      <td class="td-mono">${e.carbs || '—'} <span style="font-size:11px;color:var(--text-muted)">g</span></td>
+      <td class="td-mono">${e.insulin || '—'} U</td>
+      <td class="td-mono">${e.recommended ? e.recommended.toFixed(2) : '—'} U</td>
+      <td class="td-mono ${diffCls}">${e.manque !== undefined ? (e.manque >= 0 ? '+' : '') + e.manque.toFixed(2) : '—'} U</td>
+      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escHtml(e.comment||'')}">${escHtml(e.comment||'—')}</td>
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-secondary btn-sm" onclick="openEdit(${e.id})">✏️</button>
+          <button class="btn btn-secondary btn-sm" onclick="viewSnapshot(${e.id})">🔍</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteEntry(${e.id})">🗑️</button>
+        </div>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ========== DELETE ==========
+function deleteEntry(id) {
+  if (!confirm('Supprimer cette entrée ?')) return;
+  entries = entries.filter(e => e.id !== id);
+  save();
+  renderAll();
+  showToast('🗑️ Entrée supprimée');
+}
+
+// ========== EDIT ==========
+function openEdit(id) {
+  const e = entries.find(x => x.id === id);
+  if (!e) return;
+  editId = id;
+  document.getElementById('e-date').value = e.date;
+  document.getElementById('e-meal').value = e.meal;
+  document.getElementById('e-glyc').value = e.glyc || '';
+  document.getElementById('e-carbs').value = e.carbs || '';
+  document.getElementById('e-insulin').value = e.insulin || '';
+  document.getElementById('e-comment').value = e.comment || '';
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+function closeEditModal() { document.getElementById('edit-modal').classList.remove('open'); }
+
+function saveEdit() {
+  const idx = entries.findIndex(x => x.id === editId);
+  if (idx < 0) return;
+  const e = entries[idx];
+  e.date = document.getElementById('e-date').value;
+  e.meal = document.getElementById('e-meal').value;
+  e.glyc = parseNum(document.getElementById('e-glyc').value);
+  e.carbs = parseNum(document.getElementById('e-carbs').value);
+  e.insulin = parseNum(document.getElementById('e-insulin').value);
+  e.comment = document.getElementById('e-comment').value;
+  const calc = calcRecommended(e.glyc, e.carbs, e.meal);
+  e.recommended = calc.total;
+  e.manque = calc.manque;
+  save();
+  closeEditModal();
+  renderAll();
+  showToast('✅ Entrée modifiée');
+}
+
+// ========== SNAPSHOT ==========
+function viewSnapshot(id) {
+  const e = entries.find(x => x.id === id);
+  if (!e || !e.profileSnapshot) { showToast('Pas de snapshot disponible'); return; }
+  const s = e.profileSnapshot;
+  document.getElementById('snapshot-content').innerHTML = `
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px;font-family:'DM Mono',monospace">
+      Paramètres actifs lors de l'entrée du ${e.date}
+    </p>
+    <div class="params-grid">
+      ${paramCard('Cible glycémique', s.cible + ' g/L')}
+      ${paramCard('Ratio matin', s.ratioMatin + ' U/10g')}
+      ${paramCard('Ratio midi', s.ratioMidi + ' U/10g')}
+      ${paramCard('Ratio soir', s.ratioSoir + ' U/10g')}
+      ${paramCard('Sensibilité', '1 U = -' + s.sensibilite + ' g/L')}
+    </div>`;
+  document.getElementById('snapshot-modal').classList.add('open');
+}
+
+function paramCard(name, val) {
+  return `<div class="param-item"><div class="param-name">${name}</div><div class="param-val">${val}</div></div>`;
+}
+
+function closeSnapshotModal() { document.getElementById('snapshot-modal').classList.remove('open'); }
+
+// ========== CHARTS ==========
+const chartDefaults = {
+  plugins: { legend: { labels: { color: 'rgba(232,234,240,0.5)', font: { family: 'DM Mono', size: 11 } } } },
+  scales: {
+    x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: 'rgba(232,234,240,0.4)', font: { family: 'DM Mono', size: 10 } } },
+    y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: 'rgba(232,234,240,0.4)', font: { family: 'DM Mono', size: 10 } } }
+  }
+};
+
+function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+function renderCharts() {
+  const sorted = [...entries].sort((a,b) => a.date.localeCompare(b.date));
+  const labels = sorted.map(e => e.date.slice(5)); // MM-DD
+  const glycs  = sorted.map(e => e.glyc || null);
+  const carbsA = sorted.map(e => e.carbs || null);
+  const insInjected = sorted.map(e => e.insulin || null);
+  const insRecommended = sorted.map(e => e.recommended || null);
+
+  // 1. Glycémie line
+  destroyChart('glyc');
+  const ctxG = document.getElementById('chart-glyc').getContext('2d');
+  const gradG = ctxG.createLinearGradient(0,0,0,200);
+  gradG.addColorStop(0, 'rgba(79,195,247,0.3)');
+  gradG.addColorStop(1, 'rgba(79,195,247,0)');
+  charts.glyc = new Chart(ctxG, {
+    type: 'line',
+    data: { labels, datasets: [{
+      label: 'Glycémie g/L',
+      data: glycs,
+      borderColor: '#4fc3f7', backgroundColor: gradG,
+      tension: 0.4, fill: true, pointRadius: 3, pointBackgroundColor: '#4fc3f7'
+    }, {
+      label: 'Cible',
+      data: labels.map(() => profile.cible),
+      borderColor: 'rgba(105,240,174,0.4)', borderDash: [5,5],
+      pointRadius: 0, fill: false
+    }]},
+    options: { ...chartDefaults, responsive: true, maintainAspectRatio: false }
+  });
+
+  // 2. Glucides bar
+  destroyChart('carbs');
+  const ctxC = document.getElementById('chart-carbs').getContext('2d');
+  charts.carbs = new Chart(ctxC, {
+    type: 'bar',
+    data: { labels, datasets: [{
+      label: 'Glucides g',
+      data: carbsA,
+      backgroundColor: 'rgba(255,183,77,0.5)', borderColor: '#ffb74d', borderWidth: 1, borderRadius: 4
+    }]},
+    options: { ...chartDefaults, responsive: true, maintainAspectRatio: false }
+  });
+
+  // 3. Insuline
+  destroyChart('ins');
+  charts.ins = new Chart(document.getElementById('chart-ins'), {
+    type: 'bar',
+    data: { labels, datasets: [
+      { label: 'Recommandée U', data: insRecommended, backgroundColor: 'rgba(79,195,247,0.4)', borderColor: '#4fc3f7', borderWidth: 1, borderRadius: 4 },
+      { label: 'Injectée U',    data: insInjected,    backgroundColor: 'rgba(206,147,216,0.4)', borderColor: '#ce93d8', borderWidth: 1, borderRadius: 4 }
+    ]},
+    options: { ...chartDefaults, responsive: true, maintainAspectRatio: false }
+  });
+
+  // 4. Moyenne par repas
+  destroyChart('meal');
+  const meals = ['matin','midi','soir','nuit'];
+  const mealAvg = meals.map(m => {
+    const es = entries.filter(e => e.meal === m && e.glyc);
+    return es.length ? es.reduce((a,b)=>a+b.glyc,0)/es.length : null;
+  });
+  charts.meal = new Chart(document.getElementById('chart-meal'), {
+    type: 'bar',
+    data: {
+      labels: ['🌅 Matin','☀️ Midi','🌆 Soir','🌙 Nuit'],
+      datasets: [{ label: 'Glycémie moy. g/L', data: mealAvg,
+        backgroundColor: ['rgba(79,195,247,0.5)','rgba(255,183,77,0.5)','rgba(206,147,216,0.5)','rgba(105,240,174,0.5)'],
+        borderRadius: 6 }]
+    },
+    options: { ...chartDefaults, responsive: true, maintainAspectRatio: false }
+  });
+
+  // 5. Tendance 7 jours
+  destroyChart('trend');
+  const days7 = [];
+  for (let i=6; i>=0; i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    days7.push(d.toISOString().split('T')[0]);
+  }
+  const trend7 = days7.map(d => {
+    const es = entries.filter(e => e.date === d && e.glyc);
+    return es.length ? es.reduce((a,b)=>a+b.glyc,0)/es.length : null;
+  });
+  const ctxT = document.getElementById('chart-trend').getContext('2d');
+  const gradT = ctxT.createLinearGradient(0,0,0,200);
+  gradT.addColorStop(0, 'rgba(105,240,174,0.3)');
+  gradT.addColorStop(1, 'rgba(105,240,174,0)');
+  charts.trend = new Chart(ctxT, {
+    type: 'line',
+    data: {
+      labels: days7.map(d => d.slice(5)),
+      datasets: [{
+        label: 'Moy. journalière g/L',
+        data: trend7,
+        borderColor: '#69f0ae', backgroundColor: gradT,
+        tension: 0.4, fill: true, pointRadius: 4, pointBackgroundColor: '#69f0ae',
+        spanGaps: true
+      }]
+    },
+    options: { ...chartDefaults, responsive: true, maintainAspectRatio: false }
+  });
+}
+
+// ========== ANALYSIS ==========
+function renderAnalysis() {
+  // Ratios
+  const meals = [
+    { key: 'matin', label: 'Matin', theory: profile.ratioMatin },
+    { key: 'midi',  label: 'Midi',  theory: profile.ratioMidi  },
+    { key: 'soir',  label: 'Soir',  theory: profile.ratioSoir  }
+  ];
+
+  const container = document.getElementById('analysis-ratios');
+  container.innerHTML = '';
+
+  meals.forEach(m => {
+    const es = entries.filter(e => e.meal === m.key && e.insulin && e.carbs && e.carbs > 0);
+    let html = `<div class="analysis-card">
+      <div class="analysis-meal">${m.label}</div>`;
+
+    if (es.length < 2) {
+      html += `<p style="font-size:12px;color:var(--text-muted)">Données insuffisantes (min. 2 entrées)</p>`;
+    } else {
+      const observed = es.map(e => (e.insulin / e.carbs) * 10);
+      const avgObs = observed.reduce((a,b)=>a+b,0) / observed.length;
+      const diff = ((avgObs - m.theory) / m.theory) * 100;
+      let dir = '', dirCls = '';
+      if (Math.abs(diff) < 10) { dir = '✓ Cohérent'; dirCls = 'dir-ok'; }
+      else if (diff > 0)       { dir = '↑ Augmenter'; dirCls = 'dir-up'; }
+      else                     { dir = '↓ Réduire';   dirCls = 'dir-down'; }
+
+      html += `
+        <div class="analysis-row"><span>Ratio théorique</span><span class="td-mono">${m.theory} U/10g</span></div>
+        <div class="analysis-row"><span>Ratio observé</span><span class="td-mono">${avgObs.toFixed(2)} U/10g</span></div>
+        <div class="analysis-row"><span>Entrées analysées</span><span class="td-mono">${es.length}</span></div>
+        <div style="margin-top:10px"><span class="analysis-dir ${dirCls}">${dir}</span></div>`;
     }
 
-    function parseNum(value) {
-      const normalized = String(value ?? '').replace(',', '.').trim();
-      const parsed = parseFloat(normalized);
-      return Number.isFinite(parsed) ? parsed : NaN;
-    }
+    html += '</div>';
+    container.innerHTML += html;
+  });
 
-    function todayISO() {
-      const now = new Date();
-      const offset = now.getTimezoneOffset();
-      return new Date(now.getTime() - offset * 60000).toISOString().split('T')[0];
-    }
+  // Sensitivity
+  const sensEl = document.getElementById('analysis-sensitivity');
+  const corrEntries = entries.filter(e => e.insulin && e.glyc && e.carbs === 0);
 
-    function mealLabel(meal) { return meal.charAt(0).toUpperCase() + meal.slice(1); }
-    function mealOrder(meal) { return { matin: 1, midi: 2, soir: 3, nuit: 4 }[meal] || 9; }
-    function buildLabel(entry) { return `${entry.date} · ${mealLabel(entry.meal)}`; }
-    function generateId() { return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`; }
+  if (corrEntries.length < 2) {
+    sensEl.innerHTML = '<p style="color:var(--text-muted);font-size:13px">Pas assez d\'entrées de correction pure (repas nuit / 0 glucides) pour l\'analyse.</p>';
+  } else {
+    const drops = corrEntries.map(e => {
+      // On essaie de regarder la prochaine entrée
+      return e.insulin > 0 ? profile.sensibilite : null;
+    }).filter(Boolean);
+    const theorique = profile.sensibilite;
+    const baisseEstimee = theorique; // sans données de suivi post-injection
+    sensEl.innerHTML = `
+      <div class="sensitivity-card">
+        <div class="s-title">Sensibilité à l'insuline (correction)</div>
+        <div class="s-row"><span>Facteur théorique configuré</span><span class="s-val">1 U = -${theorique} g/L</span></div>
+        <div class="s-row"><span>Entrées correction analysées</span><span class="s-val">${corrEntries.length}</span></div>
+        <div class="s-row"><span>Dose correction moyenne</span><span class="s-val">${(corrEntries.reduce((a,b)=>a+b.insulin,0)/corrEntries.length).toFixed(2)} U</span></div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(206,147,216,0.2)">
+          <p style="font-size:12px;color:var(--text-muted)">
+            Pour affiner l'analyse de sensibilité, notez votre glycémie 2h après une correction.
+            Comparez avec la baisse théorique de ${theorique} g/L par unité.
+          </p>
+        </div>
+      </div>`;
+  }
+}
 
-    function getGlycemiaStatus(value) {
-      if (!Number.isFinite(value) || value <= 0) return { text: 'Renseigne une glycémie pour afficher l’état.', className: 'bg-slate-800/70 border-slate-700 text-slate-200', pill: 'Aucune valeur' };
-      if (value <= profile.targetGlycemia) return { text: `Zone cible ou inférieure (${value.toFixed(2)} g/L).`, className: 'bg-green-500/10 border-green-400/25 text-green-300', pill: 'Vert · cible OK' };
-      if (value <= 1.8) return { text: `Glycémie légèrement haute (${value.toFixed(2)} g/L).`, className: 'bg-amber-500/10 border-amber-400/25 text-amber-300', pill: 'Orange · légère hausse' };
-      return { text: `Glycémie haute (${value.toFixed(2)} g/L).`, className: 'bg-red-500/10 border-red-400/25 text-red-300', pill: 'Rouge · trop haute' };
-    }
+// ========== PARAMS ==========
+function renderParams() {
+  const el = document.getElementById('params-display');
+  el.innerHTML = `
+    ${paramCard('Cible glycémique', profile.cible + ' g/L')}
+    ${paramCard('Ratio matin', profile.ratioMatin + ' U/10g')}
+    ${paramCard('Ratio midi',  profile.ratioMidi  + ' U/10g')}
+    ${paramCard('Ratio soir',  profile.ratioSoir  + ' U/10g')}
+    ${paramCard('Sensibilité', '1 U = -' + profile.sensibilite + ' g/L')}
+  `;
+}
 
-    function calculateCarbInsulin(carbs, meal) {
-      if (meal === 'nuit') return 0;
-      const coefficient = profile.mealCoefficients[meal] || 0;
-      return (carbs / 10) * coefficient;
-    }
-    function calculateCorrection(glycemia) {
-      if (!Number.isFinite(glycemia) || glycemia <= profile.targetGlycemia) return 0;
-      return (glycemia - profile.targetGlycemia) / profile.correctionFactor;
-    }
-    function calculateRecommendedInsulin(glycemia, carbs, meal) { return calculateCarbInsulin(carbs, meal) + calculateCorrection(glycemia); }
-    function calculateEstimatedMissing(glycemia) { return calculateCorrection(glycemia); }
+function openParamsModal() {
+  document.getElementById('p-cible').value = profile.cible;
+  document.getElementById('p-matin').value = profile.ratioMatin;
+  document.getElementById('p-midi').value  = profile.ratioMidi;
+  document.getElementById('p-soir').value  = profile.ratioSoir;
+  document.getElementById('p-sensibilite').value = profile.sensibilite;
+  document.getElementById('p-comment').value = '';
+  document.getElementById('params-modal').classList.add('open');
+}
 
-    function saveEntries() { localStorage.setItem(DEFAULTS.storageKey, JSON.stringify(entries)); }
-    function saveProfile() { localStorage.setItem(DEFAULTS.profileStorageKey, JSON.stringify(profile)); }
+function closeParamsModal() { document.getElementById('params-modal').classList.remove('open'); }
 
-    function loadEntries() {
-      try {
-        const raw = localStorage.getItem(DEFAULTS.storageKey);
-        entries = raw ? JSON.parse(raw) : [];
-      } catch (e) {
-        entries = [];
-      }
-    }
+function saveParams() {
+  const old = { ...profile };
+  profile.cible        = parseNum(document.getElementById('p-cible').value)       || DEFAULT_PROFILE.cible;
+  profile.ratioMatin   = parseNum(document.getElementById('p-matin').value)       || DEFAULT_PROFILE.ratioMatin;
+  profile.ratioMidi    = parseNum(document.getElementById('p-midi').value)        || DEFAULT_PROFILE.ratioMidi;
+  profile.ratioSoir    = parseNum(document.getElementById('p-soir').value)        || DEFAULT_PROFILE.ratioSoir;
+  profile.sensibilite  = parseNum(document.getElementById('p-sensibilite').value) || DEFAULT_PROFILE.sensibilite;
 
-    function loadProfile() {
-      try {
-        const raw = localStorage.getItem(DEFAULTS.profileStorageKey);
-        if (!raw) return;
-        const parsed = JSON.parse(raw);
-        profile = {
-          targetGlycemia: parsed.targetGlycemia ?? DEFAULTS.targetGlycemia,
-          correctionFactor: parsed.correctionFactor ?? DEFAULTS.correctionFactor,
-          mealCoefficients: {
-            matin: parsed.mealCoefficients?.matin ?? DEFAULTS.mealCoefficients.matin,
-            midi: parsed.mealCoefficients?.midi ?? DEFAULTS.mealCoefficients.midi,
-            soir: parsed.mealCoefficients?.soir ?? DEFAULTS.mealCoefficients.soir
-          },
-          changeLog: Array.isArray(parsed.changeLog) ? parsed.changeLog : []
-        };
-      } catch (e) {}
-    }
+  const comment = document.getElementById('p-comment').value.trim();
 
-    function showToast(message, isError = false) {
-      const toast = $('toast');
-      toast.textContent = message;
-      toast.className = `fixed bottom-4 right-4 pointer-events-none transition duration-300 rounded-2xl border px-4 py-3 shadow-2xl z-50 text-sm ${isError ? 'border-red-400/30 bg-red-500/15 text-red-200' : 'border-slate-700 bg-slate-900/90 text-slate-100'}`;
-      requestAnimationFrame(() => {
-        toast.classList.remove('translate-y-6', 'opacity-0');
-        toast.classList.add('translate-y-0', 'opacity-100');
+  // Log modification
+  const changes = Object.keys(profile).filter(k => old[k] !== profile[k]);
+  if (changes.length) {
+    changes.forEach(k => {
+      modifs.unshift({
+        date: new Date().toLocaleString('fr-FR'),
+        param: k,
+        old: old[k],
+        new: profile[k],
+        comment
       });
-      clearTimeout(showToast._timer);
-      showToast._timer = setTimeout(() => {
-        toast.classList.add('translate-y-6', 'opacity-0');
-        toast.classList.remove('translate-y-0', 'opacity-100');
-      }, 2200);
-    }
+    });
+    localStorage.setItem(KEY_MODIFS, JSON.stringify(modifs));
+  }
 
-    function updateGlycemiaBadge(value) {
-      const status = getGlycemiaStatus(value);
-      $('glycemiaStatus').className = `rounded-2xl px-4 py-3 text-sm font-medium border ${status.className}`;
-      $('glycemiaStatus').textContent = status.text;
-      $('glycemiaPill').className = `text-xs px-3 py-1 rounded-full border ${status.className}`;
-      $('glycemiaPill').textContent = status.pill;
-    }
+  localStorage.setItem(KEY_PROFILE, JSON.stringify(profile));
+  closeParamsModal();
+  renderAll();
+  updateCalc();
+  showToast('✅ Paramètres mis à jour');
+}
 
-    function updateMealModeUI() {
-      const isNight = $('meal').value === 'nuit';
-      $('reuseLastBtn').textContent = isNight ? 'Réutiliser dernière correction nuit' : 'Réutiliser dernier repas similaire';
-      $('carbsHelp').textContent = isNight ? 'Optionnel la nuit · laisser 0 si pas de prise alimentaire' : 'Grammes';
-      $('carbs').placeholder = isNight ? '0 si correction seule' : 'Ex. 65';
-    }
+// ========== MODIFS HISTORY ==========
+function renderModifs() {
+  const el = document.getElementById('modifs-list');
+  const empty = document.getElementById('modifs-empty');
 
-    function getFormValues() {
-      return {
-        date: $('date').value,
-        meal: $('meal').value,
-        glycemia: parseNum($('glycemia').value),
-        carbs: parseNum($('carbs').value),
-        insulinInjected: parseNum($('insulinInjected').value),
-        comment: $('comment').value.trim()
-      };
-    }
+  if (!modifs.length) {
+    empty.style.display = 'block';
+    el.innerHTML = '';
+    el.appendChild(empty);
+    return;
+  }
 
-    function updateComputedFields() {
-      const meal = $('meal').value;
-      const glycemia = parseNum($('glycemia').value);
-      const carbs = parseNum($('carbs').value);
-      const safeGlycemia = Number.isFinite(glycemia) ? glycemia : 0;
-      const safeCarbs = Number.isFinite(carbs) ? carbs : 0;
-      const carbInsulin = calculateCarbInsulin(safeCarbs, meal);
-      const correction = calculateCorrection(safeGlycemia);
-      const recommended = calculateRecommendedInsulin(safeGlycemia, safeCarbs, meal);
-      const missing = calculateEstimatedMissing(safeGlycemia);
-      const isNight = meal === 'nuit';
-      $('recommendedDisplay').textContent = `${round(recommended, 1).toFixed(1)} U`;
-      $('recommendedDetails').textContent = isNight ? `${round(correction, 1).toFixed(1)} U correction nocturne` : `${round(carbInsulin, 1).toFixed(1)} U glucides + ${round(correction, 1).toFixed(1)} U correction`;
-      $('missingDisplay').textContent = `${round(missing, 1).toFixed(1)} U`;
-      updateMealModeUI();
-      updateGlycemiaBadge(Number.isFinite(glycemia) ? glycemia : null);
-    }
+  const paramLabels = {
+    cible: 'Cible glycémique',
+    ratioMatin: 'Ratio matin',
+    ratioMidi: 'Ratio midi',
+    ratioSoir: 'Ratio soir',
+    sensibilite: 'Sensibilité correction'
+  };
 
-    function resetForm() {
-      editingId = null;
-      $('entryForm').reset();
-      $('date').value = todayISO();
-      $('meal').value = 'matin';
-      $('recommendedDisplay').textContent = '0.0 U';
-      $('recommendedDetails').textContent = 'Glucides + correction glycémique';
-      $('missingDisplay').textContent = '0.0 U';
-      updateMealModeUI();
-      updateGlycemiaBadge(null);
-    }
+  el.innerHTML = modifs.map(m => `
+    <div class="history-item">
+      <div class="history-date">${m.date}</div>
+      <div class="history-desc">
+        <strong>${paramLabels[m.param] || m.param}</strong>
+        ${m.comment ? `<br><span style="color:var(--text-muted);font-size:12px">${escHtml(m.comment)}</span>` : ''}
+      </div>
+      <div class="history-old">${m.old}</div>
+      <div class="history-new">→ ${m.new}</div>
+    </div>
+  `).join('');
+}
 
-    function fillForm(entry) {
-      editingId = entry.id;
-      $('date').value = entry.date;
-      $('meal').value = entry.meal;
-      $('glycemia').value = String(entry.glycemia).replace('.', ',');
-      $('carbs').value = String(entry.carbs).replace('.', ',');
-      $('insulinInjected').value = String(entry.insulinInjected).replace('.', ',');
-      $('comment').value = entry.comment || '';
-      updateComputedFields();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+// ========== TABS ==========
+function switchTab(name) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
 
-    function validateEntry(entry) {
-      if (!entry.date || !entry.meal) return 'La date et le repas sont obligatoires.';
-      if (!Number.isFinite(entry.glycemia) || entry.glycemia < 0) return 'La glycémie doit être un nombre valide.';
-      if (!Number.isFinite(entry.carbs) || entry.carbs < 0) return 'Les glucides doivent être un nombre valide.';
-      if (!Number.isFinite(entry.insulinInjected) || entry.insulinInjected < 0) return 'L’insuline injectée doit être un nombre valide.';
-      return null;
-    }
+// ========== EXPORT / IMPORT ==========
+function exportData() {
+  const data = {
+    entries,
+    profile,
+    modifs,
+    exportedAt: new Date().toISOString()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'zenix-backup-' + today() + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('⬇️ Export téléchargé');
+}
 
-    function handleSubmit(event) {
-      event.preventDefault();
-      const values = getFormValues();
-      const error = validateEntry(values);
-      if (error) { showToast(error, true); return; }
-      const wasEditing = !!editingId;
-      const entry = {
-        id: editingId || generateId(),
-        date: values.date,
-        meal: values.meal,
-        glycemia: round(values.glycemia, 2),
-        carbs: round(values.carbs, 1),
-        insulinInjected: round(values.insulinInjected, 1),
-        comment: values.comment,
-        insulinRecommended: round(calculateRecommendedInsulin(values.glycemia, values.carbs, values.meal), 1),
-        estimatedMissing: round(calculateEstimatedMissing(values.glycemia), 1),
-        updatedAt: new Date().toISOString(),
-        profileSnapshot: {
-          targetGlycemia: profile.targetGlycemia,
-          correctionFactor: profile.correctionFactor,
-          mealCoefficients: { ...profile.mealCoefficients }
-        }
-      };
-      if (editingId) entries = entries.map((item) => item.id === editingId ? entry : item);
-      else entries.push(entry);
-      saveEntries();
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.entries) entries = data.entries;
+      if (data.profile) profile = data.profile;
+      if (data.modifs)  modifs  = data.modifs;
+      save();
       renderAll();
-      resetForm();
-      $('glycemia').focus();
-      showToast(wasEditing ? 'Entrée mise à jour.' : 'Entrée enregistrée.');
+      showToast('⬆️ Import réussi — ' + entries.length + ' entrées');
+    } catch { showToast('❌ Fichier JSON invalide'); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function clearData() {
+  if (!confirm('Supprimer TOUTES les données ? Cette action est irréversible.')) return;
+  entries = []; modifs = [];
+  profile = { ...DEFAULT_PROFILE };
+  localStorage.removeItem(KEY_ENTRIES);
+  localStorage.removeItem(KEY_PROFILE);
+  localStorage.removeItem(KEY_MODIFS);
+  renderAll();
+  showToast('🗑️ Toutes les données supprimées');
+}
+
+// ========== PERSIST ==========
+function save() {
+  localStorage.setItem(KEY_ENTRIES, JSON.stringify(entries));
+  localStorage.setItem(KEY_PROFILE, JSON.stringify(profile));
+}
+
+// ========== TOAST ==========
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ========== CLOSE MODALS ON OVERLAY CLICK ==========
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+// ========== BOOT ==========
+init();
+</script>
+
+<div id="ios-install-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:300;background:rgba(8,12,20,0.97);border-top:1px solid rgba(79,195,247,0.25);padding:14px 18px calc(14px + env(safe-area-inset-bottom));align-items:center;gap:12px;backdrop-filter:blur(20px)">
+  <svg viewBox="0 0 512 512" width="38" height="38" style="border-radius:9px;flex-shrink:0" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="ib1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4fc3f7"/><stop offset="100%" stop-color="#69f0ae"/></linearGradient></defs>
+    <rect width="512" height="512" fill="#080c14"/>
+    <line x1="108" y1="148" x2="230" y2="148" stroke="url(#ib1)" stroke-width="32" stroke-linecap="round"/>
+    <line x1="225" y1="153" x2="113" y2="359" stroke="url(#ib1)" stroke-width="32" stroke-linecap="round"/>
+    <line x1="108" y1="364" x2="230" y2="364" stroke="url(#ib1)" stroke-width="32" stroke-linecap="round"/>
+    <line x1="282" y1="148" x2="404" y2="364" stroke="url(#ib1)" stroke-width="32" stroke-linecap="round"/>
+    <line x1="404" y1="148" x2="282" y2="364" stroke="url(#ib1)" stroke-width="32" stroke-linecap="round"/>
+  </svg>
+  <div style="flex:1">
+    <div style="font-size:13px;font-weight:700;color:#e8eaf0;margin-bottom:3px">Installer Zenix sur l'écran d'accueil</div>
+    <div style="font-size:11px;color:rgba(232,234,240,0.5);font-family:DM Mono,monospace">Appuyez sur <strong style="color:#4fc3f7">⎋ Partager</strong> → <strong style="color:#4fc3f7">Sur l'écran d'accueil</strong></div>
+  </div>
+  <button onclick="dismissInstallBanner()" style="background:none;border:none;color:rgba(232,234,240,0.35);font-size:22px;cursor:pointer;padding:0 4px">✕</button>
+</div>
+
+<script>
+// ========== STORAGE KEYS ==========
+const KEY_ENTRIES = 'glycemia-tracker-entries';
+const KEY_PROFILE = 'glycemia-tracker-profile';
+const KEY_MODIFS  = 'glycemia-tracker-modifs';
+
+// ========== DEFAULT PROFILE ==========
+const DEFAULT_PROFILE = {
+  cible: 1.50,
+  ratioMatin: 1.4,
+  ratioMidi: 1.1,
+  ratioSoir: 1.05,
+  sensibilite: 0.30
+};
+
+// ========== STATE ==========
+let entries = [];
+let profile = {};
+let modifs = [];
+let charts = {};
+let editId = null;
+
+// ========== INIT ==========
+function init() {
+  entries = JSON.parse(localStorage.getItem(KEY_ENTRIES) || '[]');
+  profile = JSON.parse(localStorage.getItem(KEY_PROFILE) || JSON.stringify(DEFAULT_PROFILE));
+  modifs  = JSON.parse(localStorage.getItem(KEY_MODIFS)  || '[]');
+
+  // Set today's date
+  document.getElementById('f-date').value = today();
+
+  // Event listeners
+  ['f-glyc','f-carbs','f-meal'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updateCalc);
+  });
+  document.getElementById('btn-save').addEventListener('click', saveEntry);
+  document.getElementById('btn-reuse').addEventListener('click', reuseLastMeal);
+
+  updateCalc();
+  renderAll();
+}
+
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function parseNum(v) {
+  return parseFloat(String(v).replace(',', '.')) || 0;
+}
+
+// ========== CALC ==========
+function calcRecommended(glyc, carbs, meal) {
+  const ratioMap = {matin: profile.ratioMatin, midi: profile.ratioMidi, soir: profile.ratioSoir, nuit: 0};
+  const ratio = ratioMap[meal] || 0;
+  const insCarbs = (carbs / 10) * ratio;
+  const correction = (glyc - profile.cible) / profile.sensibilite;
+  const total = Math.max(0, insCarbs + correction);
+  const manque = correction;
+  return { insCarbs, correction, total, manque };
+}
+
+function updateCalc() {
+  const glyc  = parseNum(document.getElementById('f-glyc').value);
+  const carbs = parseNum(document.getElementById('f-carbs').value);
+  const meal  = document.getElementById('f-meal').value;
+
+  // Badge
+  const badge = document.getElementById('glyc-badge');
+  if (glyc > 0) {
+    badge.style.display = 'inline-flex';
+    if (glyc <= profile.cible) {
+      badge.className = 'glyc-badge badge-green';
+      badge.innerHTML = '🟢 ' + glyc.toFixed(2) + ' g/L';
+    } else if (glyc <= 1.80) {
+      badge.className = 'glyc-badge badge-orange';
+      badge.innerHTML = '🟠 ' + glyc.toFixed(2) + ' g/L';
+    } else {
+      badge.className = 'glyc-badge badge-red';
+      badge.innerHTML = '🔴 ' + glyc.toFixed(2) + ' g/L';
+    }
+  } else {
+    badge.style.display = 'none';
+  }
+
+  const r = calcRecommended(glyc, carbs, meal);
+  document.getElementById('c-ins-carbs').textContent  = r.insCarbs.toFixed(2) + ' U';
+  document.getElementById('c-correction').textContent = (r.correction >= 0 ? '+' : '') + r.correction.toFixed(2) + ' U';
+  document.getElementById('c-total').textContent      = r.total.toFixed(2) + ' U';
+  document.getElementById('c-manque').textContent     = (r.manque >= 0 ? '+' : '') + r.manque.toFixed(2) + ' U';
+
+  document.getElementById('c-correction').style.color = r.correction > 0 ? 'var(--orange)' : 'var(--green)';
+}
+
+// ========== SAVE ENTRY ==========
+function saveEntry() {
+  const glyc   = parseNum(document.getElementById('f-glyc').value);
+  const carbs  = parseNum(document.getElementById('f-carbs').value);
+  const insulin= parseNum(document.getElementById('f-insulin').value);
+  const meal   = document.getElementById('f-meal').value;
+  const date   = document.getElementById('f-date').value || today();
+  const comment= document.getElementById('f-comment').value.trim();
+
+  if (!glyc && !carbs && !insulin) { showToast('⚠️ Remplissez au moins un champ.'); return; }
+
+  const calc = calcRecommended(glyc, carbs, meal);
+
+  const entry = {
+    id: Date.now(),
+    date, meal, glyc, carbs, insulin,
+    comment,
+    recommended: calc.total,
+    manque: calc.manque,
+    profileSnapshot: { ...profile }
+  };
+
+  entries.unshift(entry);
+  save();
+  clearForm();
+  renderAll();
+  showToast('✅ Entrée enregistrée');
+}
+
+function clearForm() {
+  document.getElementById('f-glyc').value = '';
+  document.getElementById('f-carbs').value = '';
+  document.getElementById('f-insulin').value = '';
+  document.getElementById('f-comment').value = '';
+  document.getElementById('f-date').value = today();
+  updateCalc();
+}
+
+function reuseLastMeal() {
+  if (!entries.length) { showToast('Aucune entrée disponible'); return; }
+  const meal = document.getElementById('f-meal').value;
+  const similar = entries.find(e => e.meal === meal);
+  if (!similar) { showToast('Aucun repas similaire trouvé'); return; }
+  document.getElementById('f-carbs').value = similar.carbs;
+  updateCalc();
+  showToast('↺ Glucides du dernier repas similaire restaurés');
+}
+
+// ========== MEAL QUICK BTNS ==========
+function setMeal(meal) {
+  document.getElementById('f-meal').value = meal;
+  document.getElementById('f-glyc').focus();
+  updateCalc();
+}
+
+// ========== RENDER ALL ==========
+function renderAll() {
+  renderStats();
+  renderHistory();
+  renderCharts();
+  renderAnalysis();
+  renderParams();
+  renderModifs();
+}
+
+// ========== STATS ==========
+function renderStats() {
+  document.getElementById('stat-count').textContent = entries.length;
+  if (!entries.length) {
+    document.getElementById('stat-glyc').innerHTML = '—<span class="stat-unit">g/L</span>';
+    document.getElementById('stat-carbs').innerHTML = '—<span class="stat-unit">g</span>';
+    document.getElementById('stat-insulin').innerHTML = '—<span class="stat-unit">U</span>';
+    return;
+  }
+  const avg = arr => arr.reduce((a,b) => a+b,0) / arr.length;
+  const glycs = entries.filter(e=>e.glyc).map(e=>e.glyc);
+  const carbsA = entries.filter(e=>e.carbs).map(e=>e.carbs);
+  const insA = entries.filter(e=>e.insulin).map(e=>e.insulin);
+  document.getElementById('stat-glyc').innerHTML = (glycs.length ? avg(glycs).toFixed(2) : '—') + '<span class="stat-unit">g/L</span>';
+  document.getElementById('stat-carbs').innerHTML = (carbsA.length ? Math.round(avg(carbsA)) : '—') + '<span class="stat-unit">g</span>';
+  document.getElementById('stat-insulin').innerHTML = (insA.length ? avg(insA).toFixed(1) : '—') + '<span class="stat-unit">U</span>';
+}
+
+// ========== HISTORY ==========
+function renderHistory() {
+  const tbody = document.getElementById('history-body');
+  const empty = document.getElementById('history-empty');
+  tbody.innerHTML = '';
+
+  if (!entries.length) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  entries.forEach(e => {
+    const diff = e.insulin - e.recommended;
+    const diffCls = Math.abs(diff) < 0.5 ? 'diff-zero' : diff > 0 ? 'diff-neg' : 'diff-pos';
+    const mealEmoji = {matin:'🌅',midi:'☀️',soir:'🌆',nuit:'🌙'}[e.meal] || '';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="td-mono">${e.date}</td>
+      <td>${mealEmoji} ${e.meal}</td>
+      <td class="td-mono">${e.glyc ? e.glyc.toFixed(2) : '—'} <span style="font-size:11px;color:var(--text-muted)">g/L</span></td>
+      <td class="td-mono">${e.carbs || '—'} <span style="font-size:11px;color:var(--text-muted)">g</span></td>
+      <td class="td-mono">${e.insulin || '—'} U</td>
+      <td class="td-mono">${e.recommended ? e.recommended.toFixed(2) : '—'} U</td>
+      <td class="td-mono ${diffCls}">${e.manque !== undefined ? (e.manque >= 0 ? '+' : '') + e.manque.toFixed(2) : '—'} U</td>
+      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escHtml(e.comment||'')}">${escHtml(e.comment||'—')}</td>
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-secondary btn-sm" onclick="openEdit(${e.id})">✏️</button>
+          <button class="btn btn-secondary btn-sm" onclick="viewSnapshot(${e.id})">🔍</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteEntry(${e.id})">🗑️</button>
+        </div>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ========== DELETE ==========
+function deleteEntry(id) {
+  if (!confirm('Supprimer cette entrée ?')) return;
+  entries = entries.filter(e => e.id !== id);
+  save();
+  renderAll();
+  showToast('🗑️ Entrée supprimée');
+}
+
+// ========== EDIT ==========
+function openEdit(id) {
+  const e = entries.find(x => x.id === id);
+  if (!e) return;
+  editId = id;
+  document.getElementById('e-date').value = e.date;
+  document.getElementById('e-meal').value = e.meal;
+  document.getElementById('e-glyc').value = e.glyc || '';
+  document.getElementById('e-carbs').value = e.carbs || '';
+  document.getElementById('e-insulin').value = e.insulin || '';
+  document.getElementById('e-comment').value = e.comment || '';
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+function closeEditModal() { document.getElementById('edit-modal').classList.remove('open'); }
+
+function saveEdit() {
+  const idx = entries.findIndex(x => x.id === editId);
+  if (idx < 0) return;
+  const e = entries[idx];
+  e.date = document.getElementById('e-date').value;
+  e.meal = document.getElementById('e-meal').value;
+  e.glyc = parseNum(document.getElementById('e-glyc').value);
+  e.carbs = parseNum(document.getElementById('e-carbs').value);
+  e.insulin = parseNum(document.getElementById('e-insulin').value);
+  e.comment = document.getElementById('e-comment').value;
+  const calc = calcRecommended(e.glyc, e.carbs, e.meal);
+  e.recommended = calc.total;
+  e.manque = calc.manque;
+  save();
+  closeEditModal();
+  renderAll();
+  showToast('✅ Entrée modifiée');
+}
+
+// ========== SNAPSHOT ==========
+function viewSnapshot(id) {
+  const e = entries.find(x => x.id === id);
+  if (!e || !e.profileSnapshot) { showToast('Pas de snapshot disponible'); return; }
+  const s = e.profileSnapshot;
+  document.getElementById('snapshot-content').innerHTML = `
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px;font-family:'DM Mono',monospace">
+      Paramètres actifs lors de l'entrée du ${e.date}
+    </p>
+    <div class="params-grid">
+      ${paramCard('Cible glycémique', s.cible + ' g/L')}
+      ${paramCard('Ratio matin', s.ratioMatin + ' U/10g')}
+      ${paramCard('Ratio midi', s.ratioMidi + ' U/10g')}
+      ${paramCard('Ratio soir', s.ratioSoir + ' U/10g')}
+      ${paramCard('Sensibilité', '1 U = -' + s.sensibilite + ' g/L')}
+    </div>`;
+  document.getElementById('snapshot-modal').classList.add('open');
+}
+
+function paramCard(name, val) {
+  return `<div class="param-item"><div class="param-name">${name}</div><div class="param-val">${val}</div></div>`;
+}
+
+function closeSnapshotModal() { document.getElementById('snapshot-modal').classList.remove('open'); }
+
+// ========== CHARTS ==========
+const chartDefaults = {
+  plugins: { legend: { labels: { color: 'rgba(232,234,240,0.5)', font: { family: 'DM Mono', size: 11 } } } },
+  scales: {
+    x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: 'rgba(232,234,240,0.4)', font: { family: 'DM Mono', size: 10 } } },
+    y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: 'rgba(232,234,240,0.4)', font: { family: 'DM Mono', size: 10 } } }
+  }
+};
+
+function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+function renderCharts() {
+  const sorted = [...entries].sort((a,b) => a.date.localeCompare(b.date));
+  const labels = sorted.map(e => e.date.slice(5)); // MM-DD
+  const glycs  = sorted.map(e => e.glyc || null);
+  const carbsA = sorted.map(e => e.carbs || null);
+  const insInjected = sorted.map(e => e.insulin || null);
+  const insRecommended = sorted.map(e => e.recommended || null);
+
+  // 1. Glycémie line
+  destroyChart('glyc');
+  const ctxG = document.getElementById('chart-glyc').getContext('2d');
+  const gradG = ctxG.createLinearGradient(0,0,0,200);
+  gradG.addColorStop(0, 'rgba(79,195,247,0.3)');
+  gradG.addColorStop(1, 'rgba(79,195,247,0)');
+  charts.glyc = new Chart(ctxG, {
+    type: 'line',
+    data: { labels, datasets: [{
+      label: 'Glycémie g/L',
+      data: glycs,
+      borderColor: '#4fc3f7', backgroundColor: gradG,
+      tension: 0.4, fill: true, pointRadius: 3, pointBackgroundColor: '#4fc3f7'
+    }, {
+      label: 'Cible',
+      data: labels.map(() => profile.cible),
+      borderColor: 'rgba(105,240,174,0.4)', borderDash: [5,5],
+      pointRadius: 0, fill: false
+    }]},
+    options: { ...chartDefaults, responsive: true, maintainAspectRatio: false }
+  });
+
+  // 2. Glucides bar
+  destroyChart('carbs');
+  const ctxC = document.getElementById('chart-carbs').getContext('2d');
+  charts.carbs = new Chart(ctxC, {
+    type: 'bar',
+    data: { labels, datasets: [{
+      label: 'Glucides g',
+      data: carbsA,
+      backgroundColor: 'rgba(255,183,77,0.5)', borderColor: '#ffb74d', borderWidth: 1, borderRadius: 4
+    }]},
+    options: { ...chartDefaults, responsive: true, maintainAspectRatio: false }
+  });
+
+  // 3. Insuline
+  destroyChart('ins');
+  charts.ins = new Chart(document.getElementById('chart-ins'), {
+    type: 'bar',
+    data: { labels, datasets: [
+      { label: 'Recommandée U', data: insRecommended, backgroundColor: 'rgba(79,195,247,0.4)', borderColor: '#4fc3f7', borderWidth: 1, borderRadius: 4 },
+      { label: 'Injectée U',    data: insInjected,    backgroundColor: 'rgba(206,147,216,0.4)', borderColor: '#ce93d8', borderWidth: 1, borderRadius: 4 }
+    ]},
+    options: { ...chartDefaults, responsive: true, maintainAspectRatio: false }
+  });
+
+  // 4. Moyenne par repas
+  destroyChart('meal');
+  const meals = ['matin','midi','soir','nuit'];
+  const mealAvg = meals.map(m => {
+    const es = entries.filter(e => e.meal === m && e.glyc);
+    return es.length ? es.reduce((a,b)=>a+b.glyc,0)/es.length : null;
+  });
+  charts.meal = new Chart(document.getElementById('chart-meal'), {
+    type: 'bar',
+    data: {
+      labels: ['🌅 Matin','☀️ Midi','🌆 Soir','🌙 Nuit'],
+      datasets: [{ label: 'Glycémie moy. g/L', data: mealAvg,
+        backgroundColor: ['rgba(79,195,247,0.5)','rgba(255,183,77,0.5)','rgba(206,147,216,0.5)','rgba(105,240,174,0.5)'],
+        borderRadius: 6 }]
+    },
+    options: { ...chartDefaults, responsive: true, maintainAspectRatio: false }
+  });
+
+  // 5. Tendance 7 jours
+  destroyChart('trend');
+  const days7 = [];
+  for (let i=6; i>=0; i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    days7.push(d.toISOString().split('T')[0]);
+  }
+  const trend7 = days7.map(d => {
+    const es = entries.filter(e => e.date === d && e.glyc);
+    return es.length ? es.reduce((a,b)=>a+b.glyc,0)/es.length : null;
+  });
+  const ctxT = document.getElementById('chart-trend').getContext('2d');
+  const gradT = ctxT.createLinearGradient(0,0,0,200);
+  gradT.addColorStop(0, 'rgba(105,240,174,0.3)');
+  gradT.addColorStop(1, 'rgba(105,240,174,0)');
+  charts.trend = new Chart(ctxT, {
+    type: 'line',
+    data: {
+      labels: days7.map(d => d.slice(5)),
+      datasets: [{
+        label: 'Moy. journalière g/L',
+        data: trend7,
+        borderColor: '#69f0ae', backgroundColor: gradT,
+        tension: 0.4, fill: true, pointRadius: 4, pointBackgroundColor: '#69f0ae',
+        spanGaps: true
+      }]
+    },
+    options: { ...chartDefaults, responsive: true, maintainAspectRatio: false }
+  });
+}
+
+// ========== ANALYSIS ==========
+function renderAnalysis() {
+  // Ratios
+  const meals = [
+    { key: 'matin', label: 'Matin', theory: profile.ratioMatin },
+    { key: 'midi',  label: 'Midi',  theory: profile.ratioMidi  },
+    { key: 'soir',  label: 'Soir',  theory: profile.ratioSoir  }
+  ];
+
+  const container = document.getElementById('analysis-ratios');
+  container.innerHTML = '';
+
+  meals.forEach(m => {
+    const es = entries.filter(e => e.meal === m.key && e.insulin && e.carbs && e.carbs > 0);
+    let html = `<div class="analysis-card">
+      <div class="analysis-meal">${m.label}</div>`;
+
+    if (es.length < 2) {
+      html += `<p style="font-size:12px;color:var(--text-muted)">Données insuffisantes (min. 2 entrées)</p>`;
+    } else {
+      const observed = es.map(e => (e.insulin / e.carbs) * 10);
+      const avgObs = observed.reduce((a,b)=>a+b,0) / observed.length;
+      const diff = ((avgObs - m.theory) / m.theory) * 100;
+      let dir = '', dirCls = '';
+      if (Math.abs(diff) < 10) { dir = '✓ Cohérent'; dirCls = 'dir-ok'; }
+      else if (diff > 0)       { dir = '↑ Augmenter'; dirCls = 'dir-up'; }
+      else                     { dir = '↓ Réduire';   dirCls = 'dir-down'; }
+
+      html += `
+        <div class="analysis-row"><span>Ratio théorique</span><span class="td-mono">${m.theory} U/10g</span></div>
+        <div class="analysis-row"><span>Ratio observé</span><span class="td-mono">${avgObs.toFixed(2)} U/10g</span></div>
+        <div class="analysis-row"><span>Entrées analysées</span><span class="td-mono">${es.length}</span></div>
+        <div style="margin-top:10px"><span class="analysis-dir ${dirCls}">${dir}</span></div>`;
     }
 
-    function getChronologicalEntries() {
-      return [...entries].sort((a, b) => `${a.date}-${mealOrder(a.meal)}`.localeCompare(`${b.date}-${mealOrder(b.meal)}`));
-    }
-    function getLastEntryForMeal(meal) {
-      const arr = getChronologicalEntries().filter((e) => e.meal === meal);
-      return arr.length ? arr[arr.length - 1] : null;
-    }
-    function updateMealHints() {
-      const meal = $('meal').value;
-      const last = getLastEntryForMeal(meal);
-      $('lastGlycemiaHint').textContent = last ? `${last.glycemia.toFixed(2)} g/L` : '—';
-      $('lastCarbsHint').textContent = last ? `${last.carbs.toFixed(1)} g` : '—';
-      $('lastInjectedHint').textContent = last ? `${last.insulinInjected.toFixed(1)} U` : '—';
-    }
-    function reuseLastMealValues() {
-      const last = getLastEntryForMeal($('meal').value);
-      if (!last) { showToast('Aucune valeur précédente pour ce repas.', true); return; }
-      $('glycemia').value = String(last.glycemia).replace('.', ',');
-      $('carbs').value = String(last.carbs).replace('.', ',');
-      $('insulinInjected').value = String(last.insulinInjected).replace('.', ',');
-      updateComputedFields();
-      $('glycemia').focus();
-      $('glycemia').select();
-      showToast(`Dernières valeurs ${mealLabel($('meal').value).toLowerCase()} réutilisées.`);
-    }
+    html += '</div>';
+    container.innerHTML += html;
+  });
 
-    function updateQuickMealButtons() {
-      const currentMeal = $('meal').value;
-      document.querySelectorAll('.quick-meal-btn').forEach((btn) => {
-        const active = btn.dataset.quickMeal === currentMeal;
-        btn.className = `quick-meal-btn rounded-2xl px-4 py-3 text-sm border transition ${active ? 'border-sky-400/30 bg-sky-500/15 text-sky-300' : 'border-slate-700 bg-slate-900/60 hover:bg-slate-800'}`;
+  // Sensitivity
+  const sensEl = document.getElementById('analysis-sensitivity');
+  const corrEntries = entries.filter(e => e.insulin && e.glyc && e.carbs === 0);
+
+  if (corrEntries.length < 2) {
+    sensEl.innerHTML = '<p style="color:var(--text-muted);font-size:13px">Pas assez d\'entrées de correction pure (repas nuit / 0 glucides) pour l\'analyse.</p>';
+  } else {
+    const drops = corrEntries.map(e => {
+      // On essaie de regarder la prochaine entrée
+      return e.insulin > 0 ? profile.sensibilite : null;
+    }).filter(Boolean);
+    const theorique = profile.sensibilite;
+    const baisseEstimee = theorique; // sans données de suivi post-injection
+    sensEl.innerHTML = `
+      <div class="sensitivity-card">
+        <div class="s-title">Sensibilité à l'insuline (correction)</div>
+        <div class="s-row"><span>Facteur théorique configuré</span><span class="s-val">1 U = -${theorique} g/L</span></div>
+        <div class="s-row"><span>Entrées correction analysées</span><span class="s-val">${corrEntries.length}</span></div>
+        <div class="s-row"><span>Dose correction moyenne</span><span class="s-val">${(corrEntries.reduce((a,b)=>a+b.insulin,0)/corrEntries.length).toFixed(2)} U</span></div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(206,147,216,0.2)">
+          <p style="font-size:12px;color:var(--text-muted)">
+            Pour affiner l'analyse de sensibilité, notez votre glycémie 2h après une correction.
+            Comparez avec la baisse théorique de ${theorique} g/L par unité.
+          </p>
+        </div>
+      </div>`;
+  }
+}
+
+// ========== PARAMS ==========
+function renderParams() {
+  const el = document.getElementById('params-display');
+  el.innerHTML = `
+    ${paramCard('Cible glycémique', profile.cible + ' g/L')}
+    ${paramCard('Ratio matin', profile.ratioMatin + ' U/10g')}
+    ${paramCard('Ratio midi',  profile.ratioMidi  + ' U/10g')}
+    ${paramCard('Ratio soir',  profile.ratioSoir  + ' U/10g')}
+    ${paramCard('Sensibilité', '1 U = -' + profile.sensibilite + ' g/L')}
+  `;
+}
+
+function openParamsModal() {
+  document.getElementById('p-cible').value = profile.cible;
+  document.getElementById('p-matin').value = profile.ratioMatin;
+  document.getElementById('p-midi').value  = profile.ratioMidi;
+  document.getElementById('p-soir').value  = profile.ratioSoir;
+  document.getElementById('p-sensibilite').value = profile.sensibilite;
+  document.getElementById('p-comment').value = '';
+  document.getElementById('params-modal').classList.add('open');
+}
+
+function closeParamsModal() { document.getElementById('params-modal').classList.remove('open'); }
+
+function saveParams() {
+  const old = { ...profile };
+  profile.cible        = parseNum(document.getElementById('p-cible').value)       || DEFAULT_PROFILE.cible;
+  profile.ratioMatin   = parseNum(document.getElementById('p-matin').value)       || DEFAULT_PROFILE.ratioMatin;
+  profile.ratioMidi    = parseNum(document.getElementById('p-midi').value)        || DEFAULT_PROFILE.ratioMidi;
+  profile.ratioSoir    = parseNum(document.getElementById('p-soir').value)        || DEFAULT_PROFILE.ratioSoir;
+  profile.sensibilite  = parseNum(document.getElementById('p-sensibilite').value) || DEFAULT_PROFILE.sensibilite;
+
+  const comment = document.getElementById('p-comment').value.trim();
+
+  // Log modification
+  const changes = Object.keys(profile).filter(k => old[k] !== profile[k]);
+  if (changes.length) {
+    changes.forEach(k => {
+      modifs.unshift({
+        date: new Date().toLocaleString('fr-FR'),
+        param: k,
+        old: old[k],
+        new: profile[k],
+        comment
       });
-      updateMealModeUI();
-    }
+    });
+    localStorage.setItem(KEY_MODIFS, JSON.stringify(modifs));
+  }
 
-    function getFilteredEntries() {
-      const search = $('searchInput').value.trim().toLowerCase();
-      const mealFilter = $('filterMeal').value;
-      const sortOrder = $('sortOrder').value;
-      let data = [...entries];
-      if (mealFilter !== 'all') data = data.filter((e) => e.meal === mealFilter);
-      if (search) data = data.filter((e) => `${e.date} ${e.meal} ${mealLabel(e.meal)} ${e.comment || ''}`.toLowerCase().includes(search));
-      data.sort((a, b) => sortOrder === 'asc' ? `${a.date}-${mealOrder(a.meal)}`.localeCompare(`${b.date}-${mealOrder(b.meal)}`) : `${b.date}-${mealOrder(b.meal)}`.localeCompare(`${a.date}-${mealOrder(a.meal)}`));
-      return data;
-    }
+  localStorage.setItem(KEY_PROFILE, JSON.stringify(profile));
+  closeParamsModal();
+  renderAll();
+  updateCalc();
+  showToast('✅ Paramètres mis à jour');
+}
 
-    function openProfileSnapshot(entry) {
-      const snapshot = entry.profileSnapshot || { targetGlycemia: profile.targetGlycemia, correctionFactor: profile.correctionFactor, mealCoefficients: { ...profile.mealCoefficients } };
-      $('profileSnapshotTitle').textContent = `${entry.date} · ${mealLabel(entry.meal)}`;
-      $('profileSnapshotContent').innerHTML = `
-        <div class="rounded-2xl border border-slate-800 bg-slate-950/40 p-4"><div class="text-slate-400">Cible glycémique</div><div class="mt-1 text-base font-semibold">${snapshot.targetGlycemia.toFixed(2)} g/L</div></div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div class="rounded-2xl border border-slate-800 bg-slate-950/40 p-4"><div class="text-slate-400">Ratio matin</div><div class="mt-1 text-base font-semibold">${snapshot.mealCoefficients.matin.toFixed(2)} U / 10 g</div></div>
-          <div class="rounded-2xl border border-slate-800 bg-slate-950/40 p-4"><div class="text-slate-400">Ratio midi</div><div class="mt-1 text-base font-semibold">${snapshot.mealCoefficients.midi.toFixed(2)} U / 10 g</div></div>
-          <div class="rounded-2xl border border-slate-800 bg-slate-950/40 p-4"><div class="text-slate-400">Ratio soir</div><div class="mt-1 text-base font-semibold">${snapshot.mealCoefficients.soir.toFixed(2)} U / 10 g</div></div>
-          <div class="rounded-2xl border border-slate-800 bg-slate-950/40 p-4"><div class="text-slate-400">Sensibilité correction</div><div class="mt-1 text-base font-semibold">1 U = -${snapshot.correctionFactor.toFixed(2)} g/L</div></div>
-        </div>`;
-      $('profileSnapshotModal').classList.remove('hidden');
-    }
-    function closeProfileSnapshot() { $('profileSnapshotModal').classList.add('hidden'); }
+// ========== MODIFS HISTORY ==========
+function renderModifs() {
+  const el = document.getElementById('modifs-list');
+  const empty = document.getElementById('modifs-empty');
 
-    function renderHistory() {
-      const tbody = $('historyTable');
-      const data = getFilteredEntries();
-      if (!data.length) {
-        tbody.innerHTML = '<tr><td colspan="10" class="px-4 py-10 text-center text-slate-400">Aucune donnée enregistrée.</td></tr>';
-        return;
-      }
-      tbody.innerHTML = data.map((entry) => {
-        const status = getGlycemiaStatus(entry.glycemia);
-        const glyColor = status.className.includes('green') ? 'text-green-300' : status.className.includes('amber') ? 'text-amber-300' : status.className.includes('red') ? 'text-red-300' : 'text-slate-200';
-        return `
-          <tr class="hover:bg-slate-900/45 transition">
-            <td class="px-4 py-3 whitespace-nowrap">${entry.date}</td>
-            <td class="px-4 py-3">${mealLabel(entry.meal)}</td>
-            <td class="px-4 py-3 ${glyColor}">${entry.glycemia.toFixed(2)} g/L</td>
-            <td class="px-4 py-3">${entry.carbs.toFixed(1)} g</td>
-            <td class="px-4 py-3">${entry.insulinInjected.toFixed(1)} U</td>
-            <td class="px-4 py-3">${entry.insulinRecommended.toFixed(1)} U</td>
-            <td class="px-4 py-3">${entry.estimatedMissing.toFixed(1)} U</td>
-            <td class="px-4 py-3 max-w-[260px]"><div class="text-slate-300 whitespace-pre-wrap break-words text-xs sm:text-sm">${entry.comment ? entry.comment : '<span class="text-slate-500">—</span>'}</div></td>
-            <td class="px-4 py-3 whitespace-nowrap"><button data-action="profile" data-id="${entry.id}" class="rounded-xl px-3 py-1.5 bg-violet-500/15 text-violet-300 border border-violet-400/20 hover:bg-violet-500/25">Voir</button></td>
-            <td class="px-4 py-3"><div class="flex gap-2"><button data-action="edit" data-id="${entry.id}" class="rounded-xl px-3 py-1.5 bg-sky-500/15 text-sky-300 border border-sky-400/20 hover:bg-sky-500/25">Éditer</button><button data-action="delete" data-id="${entry.id}" class="rounded-xl px-3 py-1.5 bg-red-500/15 text-red-300 border border-red-400/20 hover:bg-red-500/25">Supprimer</button></div></td>
-          </tr>`;
-      }).join('');
-    }
+  if (!modifs.length) {
+    empty.style.display = 'block';
+    el.innerHTML = '';
+    el.appendChild(empty);
+    return;
+  }
 
-    function handleHistoryClick(event) {
-      const button = event.target.closest('button[data-action]');
-      if (!button) return;
-      const { action, id } = button.dataset;
-      const entry = entries.find((item) => item.id === id);
-      if (!entry) return;
-      if (action === 'edit') fillForm(entry);
-      if (action === 'profile') openProfileSnapshot(entry);
-      if (action === 'delete') {
-        if (!confirm(`Supprimer l’entrée du ${entry.date} (${mealLabel(entry.meal)}) ?`)) return;
-        entries = entries.filter((item) => item.id !== id);
-        saveEntries();
-        renderAll();
-        showToast('Entrée supprimée.');
-      }
-    }
+  const paramLabels = {
+    cible: 'Cible glycémique',
+    ratioMatin: 'Ratio matin',
+    ratioMidi: 'Ratio midi',
+    ratioSoir: 'Ratio soir',
+    sensibilite: 'Sensibilité correction'
+  };
 
-    function getDailyAverages() {
-      const groups = entries.reduce((acc, e) => { (acc[e.date] ||= []).push(e); return acc; }, {});
-      return Object.keys(groups).sort().map((date) => {
-        const values = groups[date];
-        return {
-          date,
-          avgGlycemia: values.reduce((s, e) => s + e.glycemia, 0) / values.length,
-          avgCarbs: values.reduce((s, e) => s + e.carbs, 0) / values.length,
-          avgInjected: values.reduce((s, e) => s + e.insulinInjected, 0) / values.length,
-          avgRecommended: values.reduce((s, e) => s + e.insulinRecommended, 0) / values.length
-        };
-      });
-    }
+  el.innerHTML = modifs.map(m => `
+    <div class="history-item">
+      <div class="history-date">${m.date}</div>
+      <div class="history-desc">
+        <strong>${paramLabels[m.param] || m.param}</strong>
+        ${m.comment ? `<br><span style="color:var(--text-muted);font-size:12px">${escHtml(m.comment)}</span>` : ''}
+      </div>
+      <div class="history-old">${m.old}</div>
+      <div class="history-new">→ ${m.new}</div>
+    </div>
+  `).join('');
+}
 
-    function getMealAverages() {
-      return ['matin', 'midi', 'soir', 'nuit'].map((meal) => {
-        const arr = entries.filter((e) => e.meal === meal);
-        return { meal: mealLabel(meal), average: arr.length ? round(arr.reduce((s, e) => s + e.glycemia, 0) / arr.length, 2) : 0 };
-      });
-    }
+// ========== TABS ==========
+function switchTab(name) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
 
-    function getWeeklyTrend() {
-      const recent = getDailyAverages().slice(-7);
-      return { labels: recent.map((r) => r.date), values: recent.map((r) => round(r.avgGlycemia, 2)) };
-    }
+// ========== EXPORT / IMPORT ==========
+function exportData() {
+  const data = {
+    entries,
+    profile,
+    modifs,
+    exportedAt: new Date().toISOString()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'zenix-backup-' + today() + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('⬇️ Export téléchargé');
+}
 
-    function updateKPIs() {
-      const count = entries.length;
-      const avgGlycemia = count ? entries.reduce((s, e) => s + e.glycemia, 0) / count : 0;
-      const avgCarbs = count ? entries.reduce((s, e) => s + e.carbs, 0) / count : 0;
-      const avgInsulin = count ? entries.reduce((s, e) => s + e.insulinInjected, 0) / count : 0;
-      $('kpiEntries').textContent = count;
-      $('kpiAvgGlycemia').textContent = `${round(avgGlycemia, 2).toFixed(2)} g/L`;
-      $('kpiAvgCarbs').textContent = `${round(avgCarbs, 1).toFixed(1)} g`;
-      $('kpiAvgInsulin').textContent = `${round(avgInsulin, 1).toFixed(1)} U`;
-    }
-
-    function updateProfileUI() {
-      $('activeRatioMorning').textContent = profile.mealCoefficients.matin.toFixed(2);
-      $('activeRatioNoon').textContent = profile.mealCoefficients.midi.toFixed(2);
-      $('activeRatioEvening').textContent = profile.mealCoefficients.soir.toFixed(2);
-      $('activeSensitivity').textContent = profile.correctionFactor.toFixed(2);
-    }
-
-    function openProfileEditor() {
-      $('profileEditor').classList.remove('hidden');
-      $('profileMorning').value = String(profile.mealCoefficients.matin).replace('.', ',');
-      $('profileNoon').value = String(profile.mealCoefficients.midi).replace('.', ',');
-      $('profileEvening').value = String(profile.mealCoefficients.soir).replace('.', ',');
-      $('profileSensitivity').value = String(profile.correctionFactor).replace('.', ',');
-      $('profileChangeComment').value = '';
-      $('profileMorning').focus();
-      $('profileMorning').select();
-    }
-
-    function closeProfileEditor() {
-      $('profileEditor').classList.add('hidden');
-    }
-
-    function saveProfileChanges() {
-      const matin = parseNum($('profileMorning').value);
-      const midi = parseNum($('profileNoon').value);
-      const soir = parseNum($('profileEvening').value);
-      const sensitivity = parseNum($('profileSensitivity').value);
-      if (![matin, midi, soir, sensitivity].every((v) => Number.isFinite(v) && v > 0)) {
-        showToast('Renseigne des valeurs valides pour tous les paramètres.', true);
-        return;
-      }
-      const log = {
-        changedAt: new Date().toLocaleString('fr-FR'),
-        oldValues: { ...profile.mealCoefficients },
-        newValues: { matin, midi, soir },
-        oldSensitivity: profile.correctionFactor,
-        newSensitivity: sensitivity,
-        comment: $('profileChangeComment').value.trim()
-      };
-      profile.mealCoefficients = { matin, midi, soir };
-      profile.correctionFactor = sensitivity;
-      profile.changeLog.push(log);
-      saveProfile();
-      closeProfileEditor();
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.entries) entries = data.entries;
+      if (data.profile) profile = data.profile;
+      if (data.modifs)  modifs  = data.modifs;
+      save();
       renderAll();
-      updateComputedFields();
-      showToast('Paramètres mis à jour et historisés.');
-    }
+      showToast('⬆️ Import réussi — ' + entries.length + ' entrées');
+    } catch { showToast('❌ Fichier JSON invalide'); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
 
-    function computePersonalInsights() {
-      const ratioContainer = $('ratioSuggestions');
-      const sensitivityContainer = $('sensitivityAnalysis');
-      const historyContainer = $('profileChangeHistory');
-      const meals = ['matin', 'midi', 'soir'];
-      ratioContainer.innerHTML = meals.map((meal) => {
-        const data = entries.filter((e) => e.meal === meal && e.carbs > 0 && Number.isFinite(e.insulinInjected));
-        if (data.length < 3) return `<div class="flex items-center justify-between gap-3"><span>${mealLabel(meal)}</span><span class="text-slate-500">Données insuffisantes</span></div>`;
-        const avgInjectedPer10 = data.reduce((sum, e) => sum + (e.insulinInjected / e.carbs) * 10, 0) / data.length;
-        const avgRecommendedPer10 = data.reduce((sum, e) => sum + (e.insulinRecommended / e.carbs) * 10, 0) / data.length;
-        const current = profile.mealCoefficients[meal];
-        const suggested = round((avgInjectedPer10 * 0.6) + (avgRecommendedPer10 * 0.4), 2);
-        const delta = suggested - current;
-        const direction = delta > 0.05 ? '↑ augmenter légèrement' : delta < -0.05 ? '↓ réduire légèrement' : '≈ cohérent';
-        const color = delta > 0.05 ? 'text-amber-300' : delta < -0.05 ? 'text-sky-300' : 'text-green-300';
-        return `<div class="rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2"><div class="flex items-center justify-between gap-3"><span class="font-medium">${mealLabel(meal)}</span><span class="text-slate-400">Actuel ${current.toFixed(2)}</span></div><div class="mt-1 text-slate-200">Suggestion observée : <strong>${suggested.toFixed(2)} U / 10 g</strong></div><div class="mt-1 text-xs ${color}">${direction}</div></div>`;
-      }).join('');
+function clearData() {
+  if (!confirm('Supprimer TOUTES les données ? Cette action est irréversible.')) return;
+  entries = []; modifs = [];
+  profile = { ...DEFAULT_PROFILE };
+  localStorage.removeItem(KEY_ENTRIES);
+  localStorage.removeItem(KEY_PROFILE);
+  localStorage.removeItem(KEY_MODIFS);
+  renderAll();
+  showToast('🗑️ Toutes les données supprimées');
+}
 
-      const correctionData = entries.filter((e) => Number.isFinite(e.glycemia) && Number.isFinite(e.insulinInjected));
-      if (correctionData.length < 5) {
-        sensitivityContainer.innerHTML = '<div class="text-slate-500">Pas assez de données pour estimer une tendance de sensibilité.</div>';
-      } else {
-        const avgExcess = correctionData.reduce((sum, e) => sum + Math.max(0, e.glycemia - profile.targetGlycemia), 0) / correctionData.length;
-        const avgInjected = correctionData.reduce((sum, e) => sum + e.insulinInjected, 0) / correctionData.length;
-        const observedDropPerUnit = avgInjected > 0 ? avgExcess / avgInjected : 0;
-        const theoretical = profile.correctionFactor;
-        const ratio = theoretical > 0 ? observedDropPerUnit / theoretical : 0;
-        let interpretation = 'Sensibilité proche du paramètre actuel.';
-        if (ratio > 1.15) interpretation = 'Tu sembles nécessiter plus d’insuline que le paramètre actuel ne le suppose.';
-        if (ratio < 0.85) interpretation = 'Tu sembles plus sensible à l’insuline que le paramètre actuel ne le suppose.';
-        sensitivityContainer.innerHTML = `<div class="rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2"><div class="text-slate-400">Référence actuelle</div><div class="mt-1"><strong>1 U = -${theoretical.toFixed(2)} g/L</strong></div></div><div class="rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2"><div class="text-slate-400">Tendance observée</div><div class="mt-1"><strong>~${round(observedDropPerUnit, 2).toFixed(2)} g/L par unité</strong></div></div><div class="rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2 text-xs text-slate-300">${interpretation}</div>`;
-      }
+// ========== PERSIST ==========
+function save() {
+  localStorage.setItem(KEY_ENTRIES, JSON.stringify(entries));
+  localStorage.setItem(KEY_PROFILE, JSON.stringify(profile));
+}
 
-      historyContainer.innerHTML = profile.changeLog.length ? [...profile.changeLog].reverse().map((log) => `<div class="rounded-xl border border-slate-800 bg-slate-900/50 px-3 py-2"><div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"><div class="text-slate-200">${log.changedAt}</div><div class="text-xs text-slate-500">Matin ${log.newValues.matin.toFixed(2)} · Midi ${log.newValues.midi.toFixed(2)} · Soir ${log.newValues.soir.toFixed(2)} · Correction ${log.newSensitivity.toFixed(2)}</div></div><div class="mt-1 text-xs text-slate-400">Avant : Matin ${log.oldValues.matin.toFixed(2)} · Midi ${log.oldValues.midi.toFixed(2)} · Soir ${log.oldValues.soir.toFixed(2)} · Correction ${log.oldSensitivity.toFixed(2)}</div><div class="mt-1 text-xs text-slate-300">${log.comment || 'Sans commentaire'}</div></div>`).join('') : '<div class="text-slate-500">Aucune modification manuelle enregistrée.</div>';
-    }
+// ========== TOAST ==========
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
 
-    function destroyCharts() { Object.values(charts).forEach((chart) => chart.destroy()); charts = {}; }
-    function baseChartOptions() {
-      return {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { labels: { color: '#cbd5e1' } } },
-        scales: {
-          x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.08)' } },
-          y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.08)' } }
-        }
-      };
-    }
+// ========== CLOSE MODALS ON OVERLAY CLICK ==========
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
 
-    function renderCharts() {
-      destroyCharts();
-      const chronological = getChronologicalEntries();
-      const weekly = getWeeklyTrend();
-      const mealAverages = getMealAverages();
-      charts.glycemiaChart = new Chart($('glycemiaChart'), { type: 'line', data: { labels: chronological.map(buildLabel), datasets: [{ label: 'Glycémie (g/L)', data: chronological.map((e) => e.glycemia), tension: 0.3, borderWidth: 2 }] }, options: baseChartOptions() });
-      charts.carbsChart = new Chart($('carbsChart'), { type: 'bar', data: { labels: chronological.map(buildLabel), datasets: [{ label: 'Glucides (g)', data: chronological.map((e) => e.carbs), borderWidth: 1 }] }, options: baseChartOptions() });
-      charts.insulinChart = new Chart($('insulinChart'), { type: 'bar', data: { labels: chronological.map(buildLabel), datasets: [{ label: 'Injectée (U)', data: chronological.map((e) => e.insulinInjected), borderWidth: 1 }, { label: 'Recommandée (U)', data: chronological.map((e) => e.insulinRecommended), borderWidth: 1 }] }, options: baseChartOptions() });
-      charts.mealAverageChart = new Chart($('mealAverageChart'), { type: 'bar', data: { labels: mealAverages.map((m) => m.meal), datasets: [{ label: 'Moyenne glycémie (g/L)', data: mealAverages.map((m) => m.average), borderWidth: 1 }] }, options: baseChartOptions() });
-      charts.weeklyTrendChart = new Chart($('weeklyTrendChart'), { type: 'line', data: { labels: weekly.labels, datasets: [{ label: 'Moyenne journalière (7 derniers jours)', data: weekly.values, tension: 0.35, borderWidth: 2 }] }, options: baseChartOptions() });
-    }
+// ========== BOOT ==========
+init();
 
-    function exportData() {
-      const blob = new Blob([JSON.stringify({ entries, profile }, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `glycemia-tracker-export-${todayISO()}.json`;
-      link.click();
-      URL.revokeObjectURL(url);
-      showToast('Export JSON téléchargé.');
-    }
+// ========== SERVICE WORKER ==========
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(r => console.log('[Zenix] SW ok'))
+      .catch(e => console.warn('[Zenix] SW err', e));
+  });
+}
 
-    function importData(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          const imported = JSON.parse(reader.result);
-          if (Array.isArray(imported)) {
-            entries = imported;
-          } else {
-            entries = Array.isArray(imported.entries) ? imported.entries : [];
-            if (imported.profile) {
-              profile = {
-                targetGlycemia: imported.profile.targetGlycemia ?? DEFAULTS.targetGlycemia,
-                correctionFactor: imported.profile.correctionFactor ?? DEFAULTS.correctionFactor,
-                mealCoefficients: {
-                  matin: imported.profile.mealCoefficients?.matin ?? DEFAULTS.mealCoefficients.matin,
-                  midi: imported.profile.mealCoefficients?.midi ?? DEFAULTS.mealCoefficients.midi,
-                  soir: imported.profile.mealCoefficients?.soir ?? DEFAULTS.mealCoefficients.soir
-                },
-                changeLog: Array.isArray(imported.profile.changeLog) ? imported.profile.changeLog : []
-              };
-            }
-          }
-          saveEntries(); saveProfile(); renderAll(); showToast('Import JSON réussi.');
-        } catch (e) {
-          showToast('Le fichier JSON est invalide.', true);
-        } finally {
-          event.target.value = '';
-        }
-      };
-      reader.readAsText(file);
-    }
+// ========== iOS INSTALL BANNER ==========
+function checkIOSInstall() {
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.navigator.standalone;
+  const dismissed = localStorage.getItem('zenix-install-dismissed');
+  if (isIOS && !isStandalone && !dismissed) {
+    const b = document.getElementById('ios-install-banner');
+    if (b) b.style.display = 'flex';
+  }
+}
+function dismissInstallBanner() {
+  const b = document.getElementById('ios-install-banner');
+  if (b) b.style.display = 'none';
+  localStorage.setItem('zenix-install-dismissed', '1');
+}
+window.addEventListener('load', checkIOSInstall);
 
-    function clearAllData() {
-      if (!confirm('Supprimer toutes les données locales ?')) return;
-      entries = [];
-      saveEntries();
-      renderAll();
-      showToast('Toutes les données locales ont été supprimées.');
-    }
-
-    function renderAll() {
-      updateProfileUI();
-      updateKPIs();
-      renderHistory();
-      renderCharts();
-      computePersonalInsights();
-      updateMealHints();
-      updateQuickMealButtons();
-    }
-
-    function bindEvents() {
-      $('entryForm').addEventListener('submit', handleSubmit);
-      $('entryForm').addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' && event.target.tagName !== 'TEXTAREA' && event.target.tagName !== 'BUTTON') {
-          event.preventDefault();
-          handleSubmit(event);
-        }
-      });
-      $('resetBtn').addEventListener('click', () => { resetForm(); $('glycemia').focus(); });
-      $('reuseLastBtn').addEventListener('click', reuseLastMealValues);
-      $('focusGlycemiaBtn').addEventListener('click', () => $('glycemia').focus());
-      $('historyTable').addEventListener('click', handleHistoryClick);
-      $('exportBtn').addEventListener('click', exportData);
-      $('importInput').addEventListener('change', importData);
-      $('clearBtn').addEventListener('click', clearAllData);
-      $('searchInput').addEventListener('input', renderHistory);
-      $('filterMeal').addEventListener('change', renderHistory);
-      $('sortOrder').addEventListener('change', renderHistory);
-      $('editProfileBtn').addEventListener('click', openProfileEditor);
-      $('cancelProfileBtn').addEventListener('click', closeProfileEditor);
-      $('saveProfileBtn').addEventListener('click', saveProfileChanges);
-      $('closeProfileSnapshotBtn').addEventListener('click', closeProfileSnapshot);
-      $('profileSnapshotModal').addEventListener('click', (event) => { if (event.target === $('profileSnapshotModal')) closeProfileSnapshot(); });
-
-      ['date','meal','glycemia','carbs','insulinInjected','comment'].forEach((id) => {
-        $(id).addEventListener('input', updateComputedFields);
-        $(id).addEventListener('change', updateComputedFields);
-      });
-      $('meal').addEventListener('change', () => { updateMealHints(); updateQuickMealButtons(); });
-
-      document.querySelectorAll('.quick-meal-btn').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          $('meal').value = btn.dataset.quickMeal;
-          updateComputedFields();
-          updateMealHints();
-          updateQuickMealButtons();
-          $('glycemia').focus();
-        });
-      });
-    }
-
-    function init() {
-      loadEntries();
-      loadProfile();
-      resetForm();
-      bindEvents();
-      renderAll();
-      updateComputedFields();
-      $('glycemia').focus();
-    }
-
-    init();
-  </script>
+</script>
 </body>
 </html>
