@@ -1,4 +1,4 @@
-# Zenix v2.4 — Suivi glycémique
+# Zenix v2.5 — Suivi glycémique
 
 Application web progressive (PWA) personnelle de suivi glycémique. Toutes les données restent dans le navigateur (localStorage).
 
@@ -14,6 +14,14 @@ Application web progressive (PWA) personnelle de suivi glycémique. Toutes les d
 | `icon.svg`, `icon-*.png`, `apple-touch-icon.png` | Icônes |
 
 Tous les fichiers doivent être dans le même dossier, servis en HTTPS (ex. GitHub Pages).
+
+## Saisie compacte (v2.5)
+
+- Date et heure sur la même ligne.
+- Mention « Additionnez directement… » supprimée.
+- Commentaire déplacé sous le bouton Enregistrer (à remplir avant d'enregistrer : il est sauvegardé avec l'entrée).
+- iPhone (appli installée) : l'appli occupe tout l'écran, plus de bande vide sous la barre de navigation ; marge sous les icônes réduite.
+- Correctif : avec le pavé ouvert dans la modification d'une entrée, le bouton Enregistrer pouvait être « raté » (la fenêtre se fermait sans enregistrer).
 
 ## Affichage mobile (v2.4)
 
