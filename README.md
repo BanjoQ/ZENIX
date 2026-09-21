@@ -20,7 +20,7 @@ Tous les fichiers doivent être dans le même dossier, servis en HTTPS (ex. GitH
 - Date et heure sur la même ligne.
 - Mention « Additionnez directement… » supprimée.
 - Commentaire déplacé sous le bouton Enregistrer (à remplir avant d'enregistrer : il est sauvegardé avec l'entrée).
-- iPhone (appli installée) : l'appli occupe tout l'écran, plus de bande vide sous la barre de navigation ; marge sous les icônes réduite.
+- iPhone (appli installée) : l’appli occupe tout l’écran, plus de bande vide sous la barre de navigation ; barre du bas abaissée au plus près de la barre d’accueil (v2.5.1).
 - Correctif : avec le pavé ouvert dans la modification d'une entrée, le bouton Enregistrer pouvait être « raté » (la fenêtre se fermait sans enregistrer).
 
 ## Affichage mobile (v2.4)
