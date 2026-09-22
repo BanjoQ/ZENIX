@@ -171,6 +171,8 @@
   .key.eq { grid-row: span 2; height: auto; background: linear-gradient(135deg, var(--accent), #7ccf62); color: #0a130e; font-weight: 700; border: none; }
   .key.zero { grid-column: span 2; }
   .calc-field.error input { border-color: var(--red); animation: shake 0.3s; }
+  .calc-field.kp-active input { border-color: var(--accent); background: rgba(195,226,90,0.05); box-shadow: 0 0 0 3px rgba(195,226,90,0.12); }
+  .calc-field input[readonly] { cursor: pointer; -webkit-user-select: none; user-select: none; }
   @keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
 
   .quick-btns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
@@ -713,7 +715,7 @@
         </p>
       </div>
     </div>
-      <div class="disclaimer">⚠️ Cet outil ne remplace pas un avis médical. Consultez votre médecin. — Zenix v2.5.1, usage personnel uniquement.</div>
+      <div class="disclaimer">⚠️ Cet outil ne remplace pas un avis médical. Consultez votre médecin. — Zenix v2.5.2, usage personnel uniquement.</div>
     </div>
   </section>
 
@@ -1272,18 +1274,27 @@ function keypadPress(input, k) {
   if (navigator.vibrate) { try { navigator.vibrate(6); } catch {} }
 }
 
+function setKeypadOpen(entry, open) {
+  entry.kp.classList.toggle('open', open);
+  entry.input.closest('.calc-field').classList.toggle('kp-active', open);
+}
+
 function closeKeypads() {
-  keypads.forEach(({ kp, input }) => {
-    kp.classList.remove('open');
-    if (document.activeElement === input) input.blur();
+  keypads.forEach(entry => {
+    setKeypadOpen(entry, false);
+    if (document.activeElement === entry.input) entry.input.blur();
   });
 }
 
+// Pavé actif : le champ est en lecture seule et ne prend JAMAIS le focus.
+// Sinon Safari iOS décale la page pour un clavier qui n'apparaît pas, et
+// l'affichage ne correspond plus à la zone tactile (on tape « 2 », il écrit « 5 »).
 function applyKeypadPref() {
-  keypads.forEach(({ input, toggle, kp }) => {
-    input.inputMode = keypadOn ? 'none' : 'text';   // pavé actif : pas de clavier système
-    toggle.classList.toggle('on', keypadOn);
-    if (!keypadOn) kp.classList.remove('open');
+  keypads.forEach(entry => {
+    entry.input.readOnly = keypadOn;
+    entry.input.inputMode = keypadOn ? 'none' : 'text';
+    entry.toggle.classList.toggle('on', keypadOn);
+    if (!keypadOn) setKeypadOpen(entry, false);
   });
 }
 
@@ -1301,11 +1312,24 @@ function setupKeypad(id) {
     if (b) keypadPress(input, b.dataset.k);
   });
 
-  input.addEventListener('focus', () => {
-    if (!keypadOn) return;
-    kp.classList.add('open');
+  const entry = { input, kp, toggle };
+  const openPad = () => {
+    keypads.forEach(o => { if (o !== entry) setKeypadOpen(o, false); });
+    if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
+    setKeypadOpen(entry, true);
     // garde le pavé visible au-dessus de la barre de navigation
-    setTimeout(() => kp.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 60);
+    setTimeout(() => kp.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 30);
+  };
+  // Touche le champ : on ouvre le pavé SANS donner le focus au champ
+  input.addEventListener('pointerdown', ev => {
+    if (!keypadOn) return;
+    ev.preventDefault();
+    openPad();
+  });
+  input.addEventListener('focus', () => {      // focus par une autre voie (clavier physique…)
+    if (!keypadOn) return;
+    input.blur();
+    openPad();
   });
   input.addEventListener('input', () => showCarbResult(id));
   input.addEventListener('keydown', ev => {
@@ -1317,11 +1341,11 @@ function setupKeypad(id) {
     keypadOn = !keypadOn;
     try { localStorage.setItem(KEY_KEYPAD, keypadOn ? '1' : '0'); } catch {}
     applyKeypadPref();
-    if (keypadOn) { kp.classList.add('open'); input.focus(); }
-    else { input.blur(); input.focus(); }   // réaffiche le clavier système
+    if (keypadOn) openPad();
+    else input.focus();   // réaffiche le clavier système
   });
 
-  keypads.push({ input, kp, toggle });
+  keypads.push(entry);
 }
 
 function initKeypads() {
@@ -1338,13 +1362,13 @@ function initKeypads() {
       if (!kp.classList.contains('open')) return;
       const zone = input.closest('.form-group') || kp.parentElement;   // champ + pavé + libellé
       if (zone.contains(ev.target) || toggle.contains(ev.target)) return;
-      kp.classList.remove('open');
+      setKeypadOpen({ input, kp }, false);
     });
   });
   // Un autre champ de saisie prend la main : on ferme le pavé
   document.addEventListener('focusin', ev => {
     if (!/^(INPUT|SELECT|TEXTAREA)$/.test(ev.target.tagName)) return;
-    keypads.forEach(({ input, kp }) => { if (ev.target !== input) kp.classList.remove('open'); });
+    keypads.forEach(o => { if (ev.target !== o.input) setKeypadOpen(o, false); });
   });
 }
 

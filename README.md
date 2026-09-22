@@ -1,4 +1,4 @@
-# Zenix v2.5 — Suivi glycémique
+# Zenix v2.5.2 — Suivi glycémique
 
 Application web progressive (PWA) personnelle de suivi glycémique. Toutes les données restent dans le navigateur (localStorage).
 
@@ -21,6 +21,7 @@ Tous les fichiers doivent être dans le même dossier, servis en HTTPS (ex. GitH
 - Mention « Additionnez directement… » supprimée.
 - Commentaire déplacé sous le bouton Enregistrer (à remplir avant d'enregistrer : il est sauvegardé avec l'entrée).
 - iPhone (appli installée) : l’appli occupe tout l’écran, plus de bande vide sous la barre de navigation ; barre du bas abaissée au plus près de la barre d’accueil (v2.5.1).
+- Correctif iPhone (v2.5.2) : avec le pavé calculatrice, le champ Glucides ne prend plus le focus (il passe en lecture seule). Safari ne décale donc plus la page : la touche affichée est bien celle qui est tapée (avant : on tapait « 2 », il écrivait « 5 », et le curseur apparaissait sous le champ).
 - Correctif : avec le pavé ouvert dans la modification d'une entrée, le bouton Enregistrer pouvait être « raté » (la fenêtre se fermait sans enregistrer).
 
 ## Affichage mobile (v2.4)
